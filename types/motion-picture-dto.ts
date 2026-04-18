@@ -29,7 +29,6 @@ export interface MotionPictureDto {
     synopsis: string | null;
     tagline: string;
     thumbnailUrl: string;
-    employees: unknown[];  // refine later when you have a type
     genres: string[];
     tags: TagDto[];
 }

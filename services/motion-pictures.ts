@@ -1,11 +1,57 @@
+// services/motion-picture-service.ts
+
+import { cache } from "react";
 import { apiFetch } from "../lib/api";
 import type { MotionPicture } from "../types/motion-picture";
 import type { MotionPictureDto } from "../types/motion-picture-dto";
+import {
+    mapFiltersToMotionPictureSearchRequest,
+    type MotionPictureFilterState,
+} from "../lib/motion-picture-filters";
+
+interface MotionPictureSearchResponseDto {
+    items: MotionPictureDto[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
+export interface MotionPictureSearchResponse {
+    items: MotionPicture[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
 
 function mapDtoToMotionPicture(dto: MotionPictureDto): MotionPicture {
     return {
         ...dto,
         releaseDate: new Date(dto.releaseDate),
+        tags: dto.tags ?? [],
+        genres: dto.genres ?? [],
+    };
+}
+
+export async function searchMotionPicturesWithFilters(
+    filters: MotionPictureFilterState,
+    options?: {
+        page?: number;
+        pageSize?: number;
+    }
+): Promise<MotionPictureSearchResponse> {
+    const requestBody = mapFiltersToMotionPictureSearchRequest(filters, options);
+
+    const response = await apiFetch<MotionPictureSearchResponseDto>("/motionPicture/search", {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    return {
+        ...response,
+        items: response.items.map(mapDtoToMotionPicture),
     };
 }
 
@@ -24,6 +70,28 @@ export async function getMotionPictureByTitleAndDate(
 
     return mapDtoToMotionPicture(dto);
 }
+
+export const getMotionPictureById = cache(
+    async (id: number): Promise<MotionPicture> => {
+        const dto = await apiFetch<MotionPictureDto>(
+            `/motionPicture/getById/${id}`,
+            // revalidate: 0 — scores update on every rating submission, must always be fresh
+            { next: { revalidate: 0 } } as RequestInit,
+        );
+        return mapDtoToMotionPicture(dto);
+    }
+);
+
+export const getFeaturedMotionPicture = cache(
+    async (): Promise<MotionPicture> => {
+        const dto = await apiFetch<MotionPictureDto>(
+            `/motionPicture/getFeatured`,
+            { next: { revalidate: 3600 } } as RequestInit,
+        );
+        return mapDtoToMotionPicture(dto);
+    }
+);
+
 
 export async function searchMotionPictures(
     query: string

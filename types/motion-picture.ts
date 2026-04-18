@@ -1,20 +1,18 @@
 export interface TagDto {
+    id: number;
     name: string;
-    tagType: "tone" | "subgenre" | "content_warning" | "setting" | "audience";
+    tagType: "tone" | "subgenre" | "content_warning" | "gore_level" | "violence_level" | "setting" | "audience" | "seasonal" | "region";
     description: string;
+    displayPriority: number;
 }
 
 export interface MotionPicture {
-    atmosphereRatingCount: number;
     atmosphereScore: number;
     alternativeTitle: string | null;
-    averageScore: number;
     backdropUrl: string;
     boxOffice: number;
     budget: number;
-    fearRatingCount: number;
     fearScore: number;
-    goreRatingCount: number;
     goreScore: number;
     hook: string;
     id: number;
