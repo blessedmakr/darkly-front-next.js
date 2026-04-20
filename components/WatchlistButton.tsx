@@ -18,17 +18,19 @@ export default function WatchlistButton({ motionPictureId }: WatchlistButtonProp
             setLoading(false);
             return;
         }
-        getToken().then((token) => {
-            return fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/watchlist/${motionPictureId}/status`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-        }).then((res) => {
-            if (!res.ok) return;
-            return res.json();
-          }).then((data) => { if (data) setInWatchlist(data.inWatchlist); })
-          .catch(() => {})
-          .finally(() => setLoading(false));
+        let cancelled = false;
+        getToken()
+            .then((token) =>
+                fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/watchlist/${motionPictureId}/status`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+            )
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => { if (data && !cancelled) setInWatchlist(data.inWatchlist); })
+            .catch(() => {})
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
     }, [isSignedIn, motionPictureId, getToken]);
 
     async function toggle() {

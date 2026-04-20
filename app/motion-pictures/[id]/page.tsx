@@ -12,6 +12,7 @@ import {
 import RatingForm from "../../../components/RatingForm";
 import WatchlistButton from "../../../components/WatchlistButton";
 import ReviewsSection from "../../../components/ReviewsSection";
+import SimilarFilmsSection from "../../../components/SimilarFilmsSection";
 import ViewTracker from "../../../components/ViewTracker";
 
 interface MotionPictureDetailPageProps {
@@ -25,25 +26,26 @@ export async function generateMetadata({
 }: MotionPictureDetailPageProps): Promise<Metadata> {
     try {
         const { id } = await params;
-        const motionPicture = await getMotionPictureById(Number(id));
-        const backdropImage = motionPicture.backdropUrl;
+        const numericId = Number(id);
+        if (Number.isNaN(numericId)) return { title: "Not Found | Darkly" };
+
+        const motionPicture = await getMotionPictureById(numericId);
+        const title = `${motionPicture.originalTitle} | Darkly`;
+        const description =
+            motionPicture.hook ||
+            motionPicture.tagline ||
+            motionPicture.overview.slice(0, 160);
 
         return {
-            title: `${motionPicture.originalTitle} | Darkly`,
-            description:
-                motionPicture.hook ||
-                motionPicture.tagline ||
-                motionPicture.overview.slice(0, 160),
+            title,
+            description,
             openGraph: {
-                title: `${motionPicture.originalTitle} | Darkly`,
-                description:
-                    motionPicture.hook ||
-                    motionPicture.tagline ||
-                    motionPicture.overview.slice(0, 160),
-                ...(backdropImage ? {
+                title,
+                description,
+                ...(motionPicture.backdropUrl ? {
                     images: [
                         {
-                            url: backdropImage,
+                            url: motionPicture.backdropUrl,
                             width: 1200,
                             height: 630,
                             alt: motionPicture.originalTitle,
@@ -70,27 +72,22 @@ export default async function MotionPictureDetailPage({
         notFound();
     }
 
-    let motionPicture;
-
-    try {
-        motionPicture = await getMotionPictureById(numericId);
-    } catch {
-        notFound();
-    }
-
-    const { getToken } = await auth();
-    const token = await getToken();
-    let isAdmin = false;
-    if (token) {
-        const roleRes = await fetch(`${process.env.MOTION_PICTURES_API_BASE_URL}/auth/role`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-        });
-        if (roleRes.ok) {
+    const [motionPicture, isAdmin] = await Promise.all([
+        getMotionPictureById(numericId).catch(() => null),
+        auth().then(async ({ getToken }) => {
+            const token = await getToken();
+            if (!token) return false;
+            const roleRes = await fetch(
+                `${process.env.MOTION_PICTURES_API_BASE_URL}/auth/role`,
+                { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
+            );
+            if (!roleRes.ok) return false;
             const { role } = await roleRes.json();
-            isAdmin = role === "admin";
-        }
-    }
+            return role === "admin";
+        }).catch(() => false),
+    ]);
+
+    if (!motionPicture) notFound();
 
     const releaseYear = getReleaseYear(motionPicture.releaseDate);
     const primaryTag = getPrimaryTag(motionPicture.tags);
@@ -155,14 +152,22 @@ export default async function MotionPictureDetailPage({
                         </p>
 
                         {motionPicture.tagline ? (
-                            <p className="mt-6 max-w-2xl text-xl italic text-zinc-200">
+                            <p className="mt-5 text-sm italic tracking-wide text-zinc-500">
                                 {motionPicture.tagline}
                             </p>
                         ) : null}
 
-                        <p className="mt-8 max-w-3xl leading-8 text-zinc-300">
-                            {motionPicture.overview}
-                        </p>
+                        {motionPicture.hook ? (
+                            <blockquote className="mt-6 max-w-2xl border-l-2 border-red-500 pl-4 text-base font-medium leading-7 text-zinc-200">
+                                {motionPicture.hook}
+                            </blockquote>
+                        ) : null}
+
+                        <div className="mt-6 max-w-3xl border-t border-zinc-800 pt-6">
+                            <p className="whitespace-pre-line leading-8 text-zinc-400">
+                                {motionPicture.overview}
+                            </p>
+                        </div>
 
                         <div className="mt-8">
                             <div className="flex flex-wrap gap-3">
@@ -303,6 +308,10 @@ export default async function MotionPictureDetailPage({
 
             <Suspense fallback={null}>
                 <ReviewsSection motionPictureId={motionPicture.id} />
+            </Suspense>
+
+            <Suspense fallback={null}>
+                <SimilarFilmsSection motionPictureId={motionPicture.id} />
             </Suspense>
         </main>
     );

@@ -18,8 +18,8 @@ export default function Header({ overlay = false }: HeaderProps) {
                     : "sticky border-b border-zinc-800 bg-zinc-950/95 backdrop-blur",
             ].join(" ")}
         >
-            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 xl:flex-row xl:items-center">
-                <div className="flex items-center gap-6 xl:min-w-fit">
+            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 xl:flex-row xl:items-center xl:gap-6">
+                <div className="flex shrink-0 items-center gap-6">
                     <Link
                         href="/"
                         className={[
@@ -54,40 +54,10 @@ export default function Header({ overlay = false }: HeaderProps) {
                     </nav>
                 </div>
 
-                <div className="ml-auto flex items-center gap-3">
-                    <Show when="signed-out">
-                        <SignInButton>
-                            <button className="text-sm text-zinc-400 transition hover:text-zinc-100">
-                                Sign in
-                            </button>
-                        </SignInButton>
-                        <SignUpButton>
-                            <button className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100">
-                                Sign up
-                            </button>
-                        </SignUpButton>
-                    </Show>
-                    <Show when="signed-in">
-                        <nav className="hidden items-center gap-4 text-sm md:flex">
-                            <Link href="/watchlist" className="text-zinc-400 transition hover:text-zinc-100">
-                                Watchlist
-                            </Link>
-                            <Link href="/ratings" className="text-zinc-400 transition hover:text-zinc-100">
-                                My Ratings
-                            </Link>
-                            <Link href="/submit" className="text-zinc-400 transition hover:text-zinc-100">
-                                Submit
-                            </Link>
-                            <AdminLink />
-                        </nav>
-                        <UserButton />
-                    </Show>
-                </div>
-
-                <div className="w-full xl:flex xl:flex-1 xl:justify-start xl:pl-10">
+                <div className="w-full xl:flex-1">
                     <div
                         className={[
-                            "w-full xl:max-w-[420px]",
+                            "w-full",
                             overlay
                                 ? "[&_*]:border-white/15 [&_*]:bg-black/25 [&_*]:text-zinc-100 [&_*]:placeholder:text-zinc-400"
                                 : "",
@@ -103,6 +73,41 @@ export default function Header({ overlay = false }: HeaderProps) {
                         </Suspense>
                     </div>
                 </div>
+
+                <div className="flex shrink-0 items-center gap-3">
+                    <Show when="signed-out">
+                        <SignInButton>
+                            <button className="text-sm text-zinc-400 transition hover:text-zinc-100">
+                                Sign in
+                            </button>
+                        </SignInButton>
+                        <SignUpButton>
+                            <button className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100">
+                                Sign up
+                            </button>
+                        </SignUpButton>
+                    </Show>
+                    <Show when="signed-in">
+                        <nav className="hidden items-center gap-4 text-sm md:flex">
+                            <Link href="/recommendations" className="text-zinc-400 transition hover:text-zinc-100">
+                                Recommendations
+                            </Link>
+                            <Link href="/watchlist" className="text-zinc-400 transition hover:text-zinc-100">
+                                Watchlist
+                            </Link>
+                            <Link href="/ratings" className="text-zinc-400 transition hover:text-zinc-100">
+                                My Ratings
+                            </Link>
+                            <Link href="/submit" className="text-zinc-400 transition hover:text-zinc-100">
+                                Submit
+                            </Link>
+                            <AdminLink />
+                        </nav>
+                        <UserButton />
+                    </Show>
+                </div>
+
+
             </div>
 
             {overlay && (

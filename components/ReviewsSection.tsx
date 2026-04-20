@@ -1,3 +1,4 @@
+import { apiFetch } from "../lib/api";
 import CuratorBadge from "./CuratorBadge";
 
 interface PublicReview {
@@ -34,15 +35,15 @@ function formatDate(iso: string) {
 }
 
 export default async function ReviewsSection({ motionPictureId }: ReviewsSectionProps) {
-    const base = process.env.MOTION_PICTURES_API_BASE_URL;
-    const res = await fetch(
-        `${base}/ratings/motion-pictures/${motionPictureId}/reviews`,
-        { next: { revalidate: 60 } }
-    );
-
-    if (!res.ok) return null;
-
-    const reviews: PublicReview[] = await res.json();
+    let reviews: PublicReview[];
+    try {
+        reviews = await apiFetch<PublicReview[]>(
+            `/ratings/motion-pictures/${motionPictureId}/reviews`,
+            { next: { revalidate: 60 } } as RequestInit
+        );
+    } catch {
+        return null;
+    }
 
     if (reviews.length === 0) return null;
 

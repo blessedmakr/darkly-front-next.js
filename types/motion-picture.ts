@@ -1,7 +1,18 @@
+export interface MotionPicturePreviewDto {
+    id: number;
+    originalTitle: string;
+    posterUrl: string;
+    score: number;
+    fearScore: number;
+    goreScore: number;
+    atmosphereScore: number;
+    releaseYear: number;
+}
+
 export interface TagDto {
     id: number;
     name: string;
-    tagType: "tone" | "subgenre" | "content_warning" | "gore_level" | "violence_level" | "setting" | "audience" | "seasonal" | "region";
+    tagType: "tone" | "subgenre" | "content_warning" | "gore_level" | "violence_level" | "setting" | "audience" | "seasonal" | "region" | "production";
     description: string;
     displayPriority: number;
 }

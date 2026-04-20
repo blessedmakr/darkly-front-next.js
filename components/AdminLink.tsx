@@ -19,18 +19,19 @@ export default function AdminLink() {
             return;
         }
 
+        let cancelled = false;
         const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-        getToken().then((token) =>
-            fetch(`${base}/auth/role`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-                .then((r) => r.json())
-                .then((data) => {
-                    sessionStorage.setItem(ROLE_CACHE_KEY, data.role ?? "");
-                    if (data.role === "admin") setIsAdmin(true);
-                })
-                .catch(() => null)
-        );
+        getToken()
+            .then((token) =>
+                fetch(`${base}/auth/role`, { headers: { Authorization: `Bearer ${token}` } })
+                    .then((r) => r.json())
+                    .then((data) => {
+                        sessionStorage.setItem(ROLE_CACHE_KEY, data.role ?? "");
+                        if (!cancelled && data.role === "admin") setIsAdmin(true);
+                    })
+            )
+            .catch(() => null);
+        return () => { cancelled = true; };
     }, [isSignedIn, getToken]);
 
     if (!isAdmin) return null;

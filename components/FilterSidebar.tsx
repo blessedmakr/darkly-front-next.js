@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { TagDto } from "../types/motion-picture";
 import type { MotionPictureFilterState } from "../lib/motion-picture-filters";
+import { formatTagName } from "../lib/motion-picture";
 
 const DECADES = [
     { label: "'60s", start: 1960 },
@@ -27,6 +28,7 @@ const TAG_TYPE_LABELS: Record<string, string> = {
     audience: "Audience",
     seasonal: "Seasonal",
     setting: "Setting",
+    production: "Production",
 };
 
 const TAG_TYPE_ORDER = [
@@ -39,6 +41,7 @@ const TAG_TYPE_ORDER = [
     "audience",
     "seasonal",
     "setting",
+    "production",
 ];
 
 const SCORE_ROWS: Array<{ label: string; key: string }> = [
@@ -96,6 +99,21 @@ function deriveOpenSections(filters: MotionPictureFilterState): Set<string> {
     return open;
 }
 
+// Fingerprint of only filter-relevant fields — excludes sortBy/sortDir/page so that
+// sort or pagination changes don't trigger a re-sync and wipe pending selections.
+function buildFilterFingerprint(f: MotionPictureFilterState): string {
+    return [
+        f.query,
+        f.includeGenres.map((g) => g.name).join("\0"),
+        f.excludeGenres.map((g) => g.name).join("\0"),
+        f.includeTags.map((t) => `${t.tagType}:${t.name}`).join("\0"),
+        f.excludeTags.map((t) => `${t.tagType}:${t.name}`).join("\0"),
+        Object.entries(f.tagModes).sort().map(([k, v]) => `${k}=${v}`).join("\0"),
+        f.minYear ?? "", f.maxYear ?? "",
+        f.minScore ?? "", f.minFearScore ?? "", f.minAtmosphereScore ?? "", f.minGoreScore ?? "",
+    ].join("|");
+}
+
 function validateScore(value: string): string | null {
     if (value.trim() === "") return null;
     const n = parseFloat(value);
@@ -128,6 +146,13 @@ export default function FilterSidebar({
     const [openSections, setOpenSections]   = useState<Set<string>>(
         () => deriveOpenSections(currentFilters)
     );
+    const isFirstRender = useRef(true);
+    const yearRangeInverted = fromYear !== null && toYear !== null && fromYear > toYear;
+
+    const appliedFilterFingerprint = useMemo(
+        () => buildFilterFingerprint(currentFilters),
+        [currentFilters]
+    );
 
     useEffect(() => {
         const next = deriveInitialState(currentFilters);
@@ -142,21 +167,67 @@ export default function FilterSidebar({
         setScores(next.scores);
         setScoreErrors({});
         setOpenSections(deriveOpenSections(currentFilters));
-    }, [currentFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appliedFilterFingerprint]);
+
+    // Live filtering — debounced 250ms after any filter state change.
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        if (Object.keys(scoreErrors).length > 0 || yearRangeInverted) return;
+
+        const sortBy = searchParams.get("sortBy");
+        const sortDir = searchParams.get("sortDir");
+        const query = searchParams.get("query");
+        const prevSearch = searchParams.toString();
+
+        const timer = setTimeout(() => {
+            const params = new URLSearchParams();
+            if (query) params.set("query", query);
+            if (sortBy) params.set("sortBy", sortBy);
+            if (sortDir) params.set("sortDir", sortDir);
+            includeGenres.forEach((g) => params.append("genre", g));
+            excludeGenres.forEach((g) => params.append("xgenre", g));
+            includeTags.forEach((t) => params.append("tag", `${t.tagType}:${t.name}`));
+            excludeTags.forEach((t) => params.append("xtag", `${t.tagType}:${t.name}`));
+            Object.entries(tagModes).forEach(([type, mode]) => {
+                if (mode === "all") params.set(`tagmode_${type}`, "all");
+            });
+            if (fromYear !== null) params.set("minYear", String(fromYear));
+            if (toYear !== null) params.set("maxYear", String(toYear));
+            for (const { key } of SCORE_ROWS) {
+                const val = scores[key]?.trim();
+                if (val) params.set(key, val);
+            }
+            const newSearch = params.toString();
+            if (newSearch !== prevSearch) router.push(`${pathname}?${newSearch}`);
+        }, 150);
+
+        return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [includeGenres, excludeGenres, includeTags, excludeTags, tagModes, fromYear, toYear, scores, scoreErrors, yearRangeInverted, searchParams]);
 
     const sortedTagGroups = useMemo(() => {
         const groups = availableTags.reduce<Map<string, TagDto[]>>((acc, tag) => {
+            // Skip "none" sentinel tags — they indicate absence of content and
+            // aren't useful as filter options (e.g. gore-none, violence-none).
+            if (formatTagName(tag.tagType, tag.name).toLowerCase() === "none") return acc;
             const group = acc.get(tag.tagType) ?? [];
             group.push(tag);
             acc.set(tag.tagType, group);
             return acc;
         }, new Map());
 
-        return Array.from(groups.entries()).sort(([a], [b]) => {
-            const ai = TAG_TYPE_ORDER.indexOf(a);
-            const bi = TAG_TYPE_ORDER.indexOf(b);
-            return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
-        });
+        // Drop sections that ended up empty after filtering.
+        return Array.from(groups.entries())
+            .filter(([, tags]) => tags.length > 0)
+            .sort(([a], [b]) => {
+                const ai = TAG_TYPE_ORDER.indexOf(a);
+                const bi = TAG_TYPE_ORDER.indexOf(b);
+                return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+            });
     }, [availableTags]);
 
     // ── Section open/close ─────────────────────────────────────────────────────
@@ -274,55 +345,10 @@ export default function FilterSidebar({
         });
     }
 
-    // ── Apply / clear ──────────────────────────────────────────────────────────
-
-    function applyFilters() {
-        // Run validation across all score fields before submitting
-        const errors: ScoreErrors = {};
-        for (const { key } of SCORE_ROWS) {
-            const error = validateScore(scores[key] ?? "");
-            if (error) errors[key] = error;
-        }
-        if (Object.keys(errors).length > 0) {
-            setScoreErrors(errors);
-            return;
-        }
-
-        const params = new URLSearchParams();
-
-        const query = searchParams.get("query");
-        if (query) params.set("query", query);
-
-        // Preserve current sort so applying filters doesn't reset it.
-        const sortBy = searchParams.get("sortBy");
-        const sortDir = searchParams.get("sortDir");
-        if (sortBy) params.set("sortBy", sortBy);
-        if (sortDir) params.set("sortDir", sortDir);
-
-        includeGenres.forEach((g) => params.append("genre", g));
-        excludeGenres.forEach((g) => params.append("xgenre", g));
-        includeTags.forEach((t) => params.append("tag", `${t.tagType}:${t.name}`));
-        excludeTags.forEach((t) => params.append("xtag", `${t.tagType}:${t.name}`));
-
-        // Only write tagmode_<type>=all when explicitly set; "any" is the default
-        Object.entries(tagModes).forEach(([type, mode]) => {
-            if (mode === "all") params.set(`tagmode_${type}`, "all");
-        });
-
-        if (fromYear !== null) params.set("minYear", String(fromYear));
-        if (toYear !== null)   params.set("maxYear", String(toYear));
-
-        for (const { key } of SCORE_ROWS) {
-            const val = scores[key]?.trim();
-            if (val) params.set(key, val);
-        }
-
-        router.push(`${pathname}?${params.toString()}`);
-    }
+    // ── Clear ──────────────────────────────────────────────────────────────────
 
     function clearFilters() {
-        const query = searchParams.get("query");
-        router.push(query ? `${pathname}?query=${encodeURIComponent(query)}` : pathname);
+        router.push(pathname);
     }
 
     const hasPendingFilters =
@@ -334,6 +360,20 @@ export default function FilterSidebar({
         fromYear !== null ||
         toYear !== null ||
         SCORE_ROWS.some(({ key }) => (scores[key] ?? "") !== "");
+
+    const hasAppliedFilters =
+        currentFilters.query !== "" ||
+        currentFilters.includeGenres.length > 0 ||
+        currentFilters.excludeGenres.length > 0 ||
+        currentFilters.includeTags.length > 0 ||
+        currentFilters.excludeTags.length > 0 ||
+        Object.values(currentFilters.tagModes).some((m) => m === "all") ||
+        currentFilters.minYear !== null ||
+        currentFilters.maxYear !== null ||
+        currentFilters.minScore !== null ||
+        currentFilters.minFearScore !== null ||
+        currentFilters.minAtmosphereScore !== null ||
+        currentFilters.minGoreScore !== null;
 
     // ── Styles ─────────────────────────────────────────────────────────────────
 
@@ -367,22 +407,11 @@ export default function FilterSidebar({
     return (
         <div className="sticky top-24 flex max-h-[calc(100vh-8rem)] flex-col gap-4">
 
-            {/* Action bar — always visible at top */}
-            <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-                <button
-                    onClick={applyFilters}
-                    className="flex-1 rounded-md bg-lime-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-lime-300 active:bg-lime-500"
-                >
-                    Apply
-                </button>
-                {hasPendingFilters && (
-                    <button
-                        onClick={clearFilters}
-                        className="text-xs text-zinc-500 transition-colors hover:text-red-400"
-                    >
-                        Clear
-                    </button>
-                )}
+            {/* Heading */}
+            <div className="border-b border-zinc-800 pb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                    Refine results
+                </h2>
             </div>
 
             {/* Scrollable content — extra right padding keeps content clear of the scrollbar */}
@@ -479,7 +508,7 @@ export default function FilterSidebar({
                                             title={tag.description ?? undefined}
                                             className={pillClass(getTagMode(tagType, tag.name), isContentWarning)}
                                         >
-                                            {tag.name}
+                                            {formatTagName(tagType, tag.name)}
                                         </button>
                                     ))}
                                 </div>
@@ -516,7 +545,7 @@ export default function FilterSidebar({
                             <select
                                 value={fromYear ?? ""}
                                 onChange={(e) => setFrom(e.target.value ? Number(e.target.value) : null)}
-                                className={`w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm focus:border-lime-400/50 focus:outline-none ${fromYear !== null ? "text-zinc-100" : "text-zinc-400"}`}
+                                className={`w-full rounded-md border bg-zinc-900 px-3 py-1.5 text-sm focus:outline-none ${yearRangeInverted ? "border-red-500 focus:border-red-400" : "border-zinc-700 focus:border-lime-400/50"} ${fromYear !== null ? "text-zinc-100" : "text-zinc-400"}`}
                             >
                                 <option value="">Any</option>
                                 {YEARS.map((year) => (
@@ -532,7 +561,7 @@ export default function FilterSidebar({
                             <select
                                 value={toYear ?? ""}
                                 onChange={(e) => setTo(e.target.value ? Number(e.target.value) : null)}
-                                className={`w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm focus:border-lime-400/50 focus:outline-none ${toYear !== null ? "text-zinc-100" : "text-zinc-400"}`}
+                                className={`w-full rounded-md border bg-zinc-900 px-3 py-1.5 text-sm focus:outline-none ${yearRangeInverted ? "border-red-500 focus:border-red-400" : "border-zinc-700 focus:border-lime-400/50"} ${toYear !== null ? "text-zinc-100" : "text-zinc-400"}`}
                             >
                                 <option value="">Any</option>
                                 {YEARS.map((year) => (
@@ -541,6 +570,9 @@ export default function FilterSidebar({
                             </select>
                         </div>
                     </div>
+                    {yearRangeInverted && (
+                        <p className="mt-1.5 text-[10px] text-red-400">Min year must be before max year</p>
+                    )}
                 </section>
 
                 {/* Min score thresholds — range 0.0–10.0 */}
@@ -573,6 +605,17 @@ export default function FilterSidebar({
                     </div>
                 </section>
             </div>
+
+            {(hasPendingFilters || hasAppliedFilters) && (
+                <div className="border-t border-zinc-800 pt-4">
+                    <button
+                        onClick={clearFilters}
+                        className="text-xs text-zinc-500 transition-colors hover:text-red-400"
+                    >
+                        Clear filters
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

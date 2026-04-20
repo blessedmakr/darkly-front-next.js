@@ -2,7 +2,7 @@
 
 import { cache } from "react";
 import { apiFetch } from "../lib/api";
-import type { MotionPicture } from "../types/motion-picture";
+import type { MotionPicture, MotionPicturePreviewDto } from "../types/motion-picture";
 import type { MotionPictureDto } from "../types/motion-picture-dto";
 import {
     mapFiltersToMotionPictureSearchRequest,
@@ -92,6 +92,19 @@ export const getFeaturedMotionPicture = cache(
     }
 );
 
+
+export async function getSimilarFilms(id: number): Promise<MotionPicturePreviewDto[]> {
+    return apiFetch<MotionPicturePreviewDto[]>(`/motionPicture/${id}/similar`, {
+        next: { revalidate: 300 },
+    } as RequestInit);
+}
+
+export async function getRecommendations(token: string): Promise<MotionPicturePreviewDto[]> {
+    return apiFetch<MotionPicturePreviewDto[]>("/motionPicture/recommendations", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+}
 
 export async function searchMotionPictures(
     query: string

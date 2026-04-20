@@ -104,7 +104,7 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
     const [newGenre, setNewGenre] = useState<Record<number, string>>({});
 
     const [busy, setBusy] = useState<string | null>(null);
-    const [tab, setTab] = useState<"users" | "submissions" | "analytics" | "metadata">("users");
+    const [tab, setTab] = useState<"users" | "submissions" | "analytics" | "scores" | "metadata">("users");
 
     async function loadAnalytics() {
         if (topFilms !== null) return;
@@ -220,7 +220,7 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
                     [filmId]: {
                         ...prev[filmId],
                         tags: prev[filmId]?.tags.some((t) => t.id === tag.id)
-                            ? prev[filmId].tags
+                            ? prev[filmId]?.tags ?? []
                             : [...(prev[filmId]?.tags ?? []), tag],
                     },
                 }));

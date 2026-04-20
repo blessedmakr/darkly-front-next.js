@@ -1,14 +1,35 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function HeaderSearch() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const currentQuery = searchParams.get("query") ?? "";
+    const [inputValue, setInputValue] = useState(currentQuery);
+
+    // Keep the input in sync with the URL (e.g. when Clear removes the query param).
+    useEffect(() => {
+        setInputValue(currentQuery);
+    }, [currentQuery]);
+
+    function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const query = inputValue.trim();
+        const params = new URLSearchParams(searchParams.toString());
+        if (query) {
+            params.set("query", query);
+        } else {
+            params.delete("query");
+        }
+        params.delete("page");
+        router.push(`/motion-pictures?${params.toString()}`);
+    }
 
     return (
         <form
-            action="/motion-pictures"
+            onSubmit={handleSubmit}
             role="search"
             aria-label="Search motion pictures"
             className="w-full max-w-xl"
@@ -23,7 +44,8 @@ export default function HeaderSearch() {
                         id="header-search"
                         type="search"
                         name="query"
-                        defaultValue={currentQuery}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
                         placeholder="Search horror motion pictures..."
                         className="w-full bg-transparent px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                     />
