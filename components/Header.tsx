@@ -18,7 +18,7 @@ export default function Header({ overlay = false }: HeaderProps) {
                     : "sticky border-b border-zinc-800 bg-zinc-950/95 backdrop-blur",
             ].join(" ")}
         >
-            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 xl:flex-row xl:items-center xl:gap-6">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-4 lg:flex-row lg:items-center lg:gap-6">
                 <div className="flex shrink-0 items-center gap-6">
                     <Link
                         href="/"
@@ -74,7 +74,7 @@ export default function Header({ overlay = false }: HeaderProps) {
                     </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-3">
+                <div className="hidden shrink-0 items-center gap-3 lg:flex">
                     <Show when="signed-out">
                         <SignInButton>
                             <button className="text-sm text-zinc-400 transition hover:text-zinc-100">

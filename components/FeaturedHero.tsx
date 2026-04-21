@@ -32,10 +32,10 @@ export default function FeaturedHero({ motionPicture }: FeaturedHeroProps) {
                 />
             )}
 
-            {/* Left-to-right gradient: solid black on left, transparent on right */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(9,9,11,1)_0%,rgba(9,9,11,0.92)_30%,rgba(9,9,11,0.60)_60%,rgba(9,9,11,0.15)_100%)]" />
-            {/* Top and bottom vignette */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(9,9,11,0.70)_0%,transparent_20%,transparent_75%,rgba(9,9,11,0.90)_100%)]" />
+            {/* Mobile: top-to-bottom gradient. md+: left-to-right so text column sits on near-black */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(9,9,11,0.85)_0%,rgba(9,9,11,0.55)_40%,rgba(9,9,11,0.85)_100%)] md:bg-[linear-gradient(to_right,rgba(9,9,11,1)_0%,rgba(9,9,11,0.92)_30%,rgba(9,9,11,0.60)_60%,rgba(9,9,11,0.15)_100%)]" />
+            {/* Top and bottom vignette (md+ only) */}
+            <div className="absolute inset-0 hidden bg-[linear-gradient(to_bottom,rgba(9,9,11,0.70)_0%,transparent_20%,transparent_75%,rgba(9,9,11,0.90)_100%)] md:block" />
 
             {/* Content grid */}
             <div className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 items-center gap-10 px-6 pb-20 pt-28 md:grid-cols-[1fr_auto] md:gap-16 lg:px-12">
@@ -128,7 +128,7 @@ export default function FeaturedHero({ motionPicture }: FeaturedHeroProps) {
 
                 {/* ── Right column: poster ─────────────────────────────────── */}
                 {motionPicture.posterUrl && (
-                    <div className="hidden md:block">
+                    <div className="flex justify-center md:block">
                         <Link
                             href={`/motion-pictures/${motionPicture.id}`}
                             className="group block"

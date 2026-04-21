@@ -30,10 +30,10 @@ export default function MotionPictureCard({
     );
 
     return (
-        <div className="relative w-[240px]">
+        <div className="relative w-full">
             <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 transition hover:border-zinc-600 hover:bg-zinc-900">
                 <Link href={`/motion-pictures/${motionPicture.id}`} className="group block">
-                    <div className="relative h-[360px] w-full overflow-hidden bg-zinc-800">
+                    <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
                         {posterImage ? (
                             <Image
                                 src={posterImage}
@@ -41,7 +41,7 @@ export default function MotionPictureCard({
                                 fill
                                 loading="lazy"
                                 className="object-cover transition-opacity duration-300 group-hover:opacity-40"
-                                sizes="240px"
+                                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 33vw, 280px"
                             />
                         ) : (
                             <div className="flex h-full items-center justify-center text-zinc-600 text-sm">

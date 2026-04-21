@@ -65,6 +65,7 @@ interface FilterSidebarProps {
     availableGenres: string[];
     availableTags: TagDto[];
     currentFilters: MotionPictureFilterState;
+    mobile?: boolean;
 }
 
 function deriveInitialState(filters: MotionPictureFilterState) {
@@ -126,6 +127,7 @@ export default function FilterSidebar({
     availableGenres,
     availableTags,
     currentFilters,
+    mobile = false,
 }: FilterSidebarProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -405,14 +407,77 @@ export default function FilterSidebar({
     // ── Render ─────────────────────────────────────────────────────────────────
 
     return (
-        <div className="sticky top-24 flex max-h-[calc(100vh-8rem)] flex-col gap-4">
+        <div className={mobile ? "flex flex-col gap-4" : "sticky top-24 flex max-h-[calc(100vh-8rem)] flex-col gap-4"}>
 
-            {/* Heading */}
-            <div className="border-b border-zinc-800 pb-4">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                    Refine results
-                </h2>
-            </div>
+            {/* Active filter pills — outside the scrollable area so they stay visible */}
+            {(() => {
+                function navigate(updater: (p: URLSearchParams) => void) {
+                    const params = new URLSearchParams(searchParams.toString());
+                    updater(params);
+                    params.delete("page");
+                    router.push(`${pathname}?${params.toString()}`);
+                }
+
+                const pills: Array<{ key: string; label: string; onRemove: () => void }> = [];
+
+                const query = searchParams.get("query");
+                if (query) pills.push({ key: "query", label: `"${query}"`, onRemove: () => navigate((p) => p.delete("query")) });
+
+                searchParams.getAll("genre").forEach((g) => pills.push({ key: `genre:${g}`, label: g, onRemove: () => navigate((p) => { const rest = p.getAll("genre").filter((v) => v !== g); p.delete("genre"); rest.forEach((v) => p.append("genre", v)); }) }));
+                searchParams.getAll("xgenre").forEach((g) => pills.push({ key: `xgenre:${g}`, label: `not: ${g}`, onRemove: () => navigate((p) => { const rest = p.getAll("xgenre").filter((v) => v !== g); p.delete("xgenre"); rest.forEach((v) => p.append("xgenre", v)); }) }));
+
+                searchParams.getAll("tag").forEach((raw) => {
+                    const i = raw.indexOf(":");
+                    if (i === -1) return;
+                    const tagType = raw.slice(0, i);
+                    const name = raw.slice(i + 1);
+                    pills.push({ key: `tag:${raw}`, label: formatTagName(tagType, name), onRemove: () => navigate((p) => { const rest = p.getAll("tag").filter((t) => t !== raw); p.delete("tag"); rest.forEach((t) => p.append("tag", t)); if (rest.filter((t) => t.startsWith(`${tagType}:`)).length === 0) p.delete(`tagmode_${tagType}`); }) });
+                });
+                searchParams.getAll("xtag").forEach((raw) => {
+                    const i = raw.indexOf(":");
+                    if (i === -1) return;
+                    const tagType = raw.slice(0, i);
+                    const name = raw.slice(i + 1);
+                    pills.push({ key: `xtag:${raw}`, label: `not: ${formatTagName(tagType, name)}`, onRemove: () => navigate((p) => { const rest = p.getAll("xtag").filter((t) => t !== raw); p.delete("xtag"); rest.forEach((t) => p.append("xtag", t)); }) });
+                });
+
+                const minYear = searchParams.get("minYear");
+                const maxYear = searchParams.get("maxYear");
+                if (minYear || maxYear) {
+                    const label = minYear && maxYear ? `${minYear}–${maxYear}` : minYear ? `from ${minYear}` : `until ${maxYear}`;
+                    pills.push({ key: "year", label, onRemove: () => navigate((p) => { p.delete("minYear"); p.delete("maxYear"); }) });
+                }
+
+                const SCORE_LABELS: Record<string, string> = { minScore: "Score", minFearScore: "Fear", minGoreScore: "Gore", minAtmosphereScore: "Atm." };
+                Object.entries(SCORE_LABELS).forEach(([key, label]) => {
+                    const val = searchParams.get(key);
+                    if (val) pills.push({ key, label: `${label} ≥ ${val}`, onRemove: () => navigate((p) => p.delete(key)) });
+                });
+
+                if (pills.length === 0) return null;
+                return (
+                    <div className="space-y-2 border-b border-zinc-800 pb-4">
+                        <div className="flex flex-wrap gap-1.5">
+                            {pills.map((pill) => (
+                                <button
+                                    key={pill.key}
+                                    onClick={pill.onRemove}
+                                    className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-[11px] text-zinc-300 transition-colors hover:border-red-500/50 hover:text-red-400"
+                                >
+                                    {pill.label}
+                                    <span aria-hidden="true" className="text-zinc-500">✕</span>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => router.push(pathname)}
+                            className="text-[11px] text-zinc-600 transition-colors hover:text-red-400"
+                        >
+                            Clear all
+                        </button>
+                    </div>
+                );
+            })()}
 
             {/* Scrollable content — extra right padding keeps content clear of the scrollbar */}
             <div className="flex-1 space-y-6 overflow-y-auto pr-5">

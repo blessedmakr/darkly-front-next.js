@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import MotionPictureGrid from "../../components/MotionPictureGrid";
 import FilterSidebar from "../../components/FilterSidebar";
+import MobileFilterDrawer from "../../components/MobileFilterDrawer";
 import SearchPagination from "../../components/SearchPagination";
 import SortControl from "../../components/SortControl";
-import ActiveFiltersBar from "../../components/ActiveFiltersBar";
 import { searchMotionPicturesWithFilters } from "../../services/motion-pictures";
 import { getTags, getGenres } from "../../services/catalog";
 import {
@@ -34,6 +34,17 @@ export default async function MotionPicturesPage({
     ]);
 
     const activeFilters = hasActiveFilters(filters);
+    const activeFilterCount =
+        (filters.query ? 1 : 0) +
+        filters.includeGenres.length +
+        filters.excludeGenres.length +
+        filters.includeTags.length +
+        filters.excludeTags.length +
+        (filters.minYear !== null || filters.maxYear !== null ? 1 : 0) +
+        (filters.minScore !== null ? 1 : 0) +
+        (filters.minFearScore !== null ? 1 : 0) +
+        (filters.minAtmosphereScore !== null ? 1 : 0) +
+        (filters.minGoreScore !== null ? 1 : 0);
     const heading = filters.query
         ? `Results for "${filters.query}"`
         : "Browse";
@@ -56,16 +67,8 @@ export default async function MotionPicturesPage({
                     )}
                 </div>
 
-                <Suspense fallback={null}>
-                    <ActiveFiltersBar />
-                </Suspense>
-
                 <div className="mt-8 flex gap-10">
-                    <aside className="w-72 shrink-0">
-                        {/*
-                         * FilterSidebar calls useSearchParams() internally, so it must
-                         * be wrapped in Suspense even though this page is already dynamic.
-                         */}
+                    <aside className="hidden w-72 shrink-0 lg:block">
                         <Suspense fallback={null}>
                             <FilterSidebar
                                 availableGenres={genres}
@@ -76,6 +79,22 @@ export default async function MotionPicturesPage({
                     </aside>
 
                     <div className="min-w-0 flex-1">
+                        {/* Mobile filter + sort row */}
+                        <div className="mb-6 flex items-center justify-between lg:hidden">
+                            <MobileFilterDrawer
+                                availableGenres={genres}
+                                availableTags={tags}
+                                currentFilters={filters}
+                                activeFilterCount={activeFilterCount}
+                            />
+                            <Suspense fallback={null}>
+                                <SortControl
+                                    currentSortBy={filters.sortBy}
+                                    currentSortDir={filters.sortDir}
+                                />
+                            </Suspense>
+                        </div>
+
                         {result === null ? (
                             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-zinc-400">
                                 Something went wrong loading results. Try adjusting your filters.

@@ -299,8 +299,10 @@ export default async function MotionPictureDetailPage({
                                 ↓
                             </span>
                         </summary>
-                        <div className="border-t border-zinc-800 px-6 py-5">
-                            <p className="whitespace-pre-line leading-8 text-zinc-300">{motionPicture.synopsis}</p>
+                        <div className="space-y-4 border-t border-zinc-800 px-6 py-5">
+                            {motionPicture.synopsis.split("|||").map((para, i) => (
+                                <p key={i} className="leading-8 text-zinc-300">{para.trim()}</p>
+                            ))}
                         </div>
                     </details>
                 </section>
