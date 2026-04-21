@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useToast } from "./ToastProvider";
 
 interface WatchlistBookmarkProps {
     motionPictureId: number;
@@ -9,6 +10,7 @@ interface WatchlistBookmarkProps {
 
 export default function WatchlistBookmark({ motionPictureId }: WatchlistBookmarkProps) {
     const { getToken, isSignedIn } = useAuth();
+    const { showToast } = useToast();
     const [inWatchlist, setInWatchlist] = useState(false);
     const [loading, setLoading] = useState(true);
     const [toggling, setToggling] = useState(false);
@@ -47,6 +49,12 @@ export default function WatchlistBookmark({ motionPictureId }: WatchlistBookmark
                 method: inWatchlist ? "DELETE" : "POST",
                 headers: { Authorization: `Bearer ${token}` },
             });
+            if (!inWatchlist) {
+                showToast("Added to watchlist. Seen it already?", {
+                    href: `/motion-pictures/${motionPictureId}`,
+                    linkLabel: "Rate it",
+                });
+            }
         } catch {
             setInWatchlist(!optimistic);
         } finally {
