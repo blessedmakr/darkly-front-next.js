@@ -92,7 +92,8 @@ function parseNumberParam(value: string | string[] | undefined): number | null {
     const str = Array.isArray(value) ? value[0] : value;
     if (!str) return null;
     const n = parseFloat(str);
-    return Number.isFinite(n) ? n : null;
+    if (!Number.isFinite(n)) return null;
+    return Math.max(0, Math.min(10, n));
 }
 
 const VALID_SORT_BY: SortBy[] = ["releaseDate", "fearScore", "goreScore", "atmosphereScore", "score"];
@@ -107,10 +108,17 @@ function parseSortDir(value: string | string[] | undefined): SortDir {
     return str === "asc" ? "asc" : "desc";
 }
 
+const VALID_TAG_TYPES = new Set<string>([
+    "tone", "subgenre", "content_warning", "gore_level",
+    "violence_level", "setting", "audience", "seasonal", "region", "production",
+]);
+
 function parseTagParam(raw: string): TagFilterValue | null {
     const i = raw.indexOf(":");
     if (i === -1 || i === raw.length - 1) return null;
-    return { tagType: raw.slice(0, i) as TagType, name: raw.slice(i + 1) };
+    const tagType = raw.slice(0, i);
+    if (!VALID_TAG_TYPES.has(tagType)) return null;
+    return { tagType: tagType as TagType, name: raw.slice(i + 1) };
 }
 
 export function parseSearchParamsToFilters(params: RawParams): {

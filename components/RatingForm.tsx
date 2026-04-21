@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth, SignInButton, Show } from "@clerk/nextjs";
+import { useRole } from "./RoleProvider";
 
 const DIMENSIONS = [
     { key: "overallScore",    label: "Overall"    },
@@ -26,7 +28,6 @@ interface ExistingRating {
 interface RatingFormProps {
     motionPictureId: number;
     motionPictureTitle: string;
-    isAdmin?: boolean;
 }
 
 function ScoreSelector({
@@ -75,8 +76,10 @@ function formatUnlockDate(iso: string): string {
     });
 }
 
-export default function RatingForm({ motionPictureId, motionPictureTitle, isAdmin = false }: RatingFormProps) {
+export default function RatingForm({ motionPictureId, motionPictureTitle }: RatingFormProps) {
+    const router = useRouter();
     const { getToken } = useAuth();
+    const { isAdmin } = useRole();
 
     const [existing, setExisting]     = useState<ExistingRating | null>(null);
     const [loadingExisting, setLoadingExisting] = useState(true);
@@ -167,6 +170,7 @@ export default function RatingForm({ motionPictureId, motionPictureTitle, isAdmi
             }
 
             setSubmitted(true);
+            router.refresh();
         } catch {
             setError("Something went wrong. Please try again.");
             setConfirming(false);

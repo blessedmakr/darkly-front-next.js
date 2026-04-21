@@ -104,6 +104,7 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
     const [newGenre, setNewGenre] = useState<Record<number, string>>({});
 
     const [busy, setBusy] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
     const [tab, setTab] = useState<"users" | "submissions" | "analytics" | "scores" | "metadata">("users");
 
     async function loadAnalytics() {
@@ -282,43 +283,64 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
 
     async function grantCurator(userId: string) {
         setBusy(userId);
-        const token = await getToken();
-        await fetch(`${base}/admin/users/${userId}/curator`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setUsers((prev) =>
-            prev.map((u) => (u.id === userId ? { ...u, role: "trusted_curator" } : u))
-        );
-        setBusy(null);
+        setActionError(null);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${base}/admin/users/${userId}/curator`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) { setActionError(`Failed to grant curator (${res.status})`); return; }
+            setUsers((prev) =>
+                prev.map((u) => (u.id === userId ? { ...u, role: "trusted_curator" } : u))
+            );
+        } catch {
+            setActionError("Network error — could not reach the backend.");
+        } finally {
+            setBusy(null);
+        }
     }
 
     async function revokeCurator(userId: string) {
         setBusy(userId);
-        const token = await getToken();
-        await fetch(`${base}/admin/users/${userId}/curator`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setUsers((prev) =>
-            prev.map((u) => (u.id === userId ? { ...u, role: "member" } : u))
-        );
-        setBusy(null);
+        setActionError(null);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${base}/admin/users/${userId}/curator`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) { setActionError(`Failed to revoke curator (${res.status})`); return; }
+            setUsers((prev) =>
+                prev.map((u) => (u.id === userId ? { ...u, role: "member" } : u))
+            );
+        } catch {
+            setActionError("Network error — could not reach the backend.");
+        } finally {
+            setBusy(null);
+        }
     }
 
     async function handleSubmission(id: number, action: "approve" | "reject") {
         setBusy(String(id));
-        const token = await getToken();
-        await fetch(`${base}/admin/submissions/${id}/${action}`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setSubmissions((prev) =>
-            prev.map((s) =>
-                s.id === id ? { ...s, status: action === "approve" ? "approved" : "rejected" } : s
-            )
-        );
-        setBusy(null);
+        setActionError(null);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${base}/admin/submissions/${id}/${action}`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) { setActionError(`Failed to ${action} submission (${res.status})`); return; }
+            setSubmissions((prev) =>
+                prev.map((s) =>
+                    s.id === id ? { ...s, status: action === "approve" ? "approved" : "rejected" } : s
+                )
+            );
+        } catch {
+            setActionError("Network error — could not reach the backend.");
+        } finally {
+            setBusy(null);
+        }
     }
 
     const pending = submissions.filter((s) => s.status === "pending");
@@ -330,6 +352,12 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
 
     return (
         <div>
+            {actionError && (
+                <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                    {actionError}
+                    <button onClick={() => setActionError(null)} className="ml-3 text-red-500 hover:text-red-300">✕</button>
+                </div>
+            )}
             {/* Tabs */}
             <div className="flex gap-1 mb-8 border-b border-zinc-800">
                 {(["users", "submissions", "analytics", "scores", "metadata"] as const).map((t) => (

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { auth } from "@clerk/nextjs/server";
+
 import { getMotionPictureById } from "../../../services/motion-pictures";
 import {
     formatRunningTime,
@@ -71,9 +71,6 @@ export default async function MotionPictureDetailPage({
     if (Number.isNaN(numericId)) {
         notFound();
     }
-
-    const { userId } = await auth();
-    const isAdmin = !!userId && userId === process.env.APP_ADMIN_USER_ID;
 
     const motionPicture = await getMotionPictureById(numericId).catch(() => null);
 
@@ -209,7 +206,6 @@ export default async function MotionPictureDetailPage({
                 <RatingForm
                     motionPictureId={motionPicture.id}
                     motionPictureTitle={motionPicture.originalTitle}
-                    isAdmin={isAdmin}
                 />
 
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
