@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+
 const securityHeaders = [
     { key: "X-Frame-Options",           value: "DENY" },
     { key: "X-Content-Type-Options",    value: "nosniff" },
@@ -18,7 +20,7 @@ const securityHeaders = [
             "script-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.accounts.dev https://challenges.cloudflare.com",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob: https://image.tmdb.org https://img.clerk.com",
-            "connect-src 'self' https://*.clerk.accounts.dev https://clerk.dev https://*.railway.app https://darkly-back-end-production.up.railway.app",
+            `connect-src 'self' https://*.clerk.accounts.dev https://clerk.dev ${apiBase}`,
             "frame-src https://challenges.cloudflare.com https://clerk.accounts.dev https://*.clerk.accounts.dev",
             "frame-ancestors 'none'",
             "form-action 'self'",

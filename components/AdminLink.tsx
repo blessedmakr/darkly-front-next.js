@@ -1,29 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useRole } from "./RoleProvider";
 
 export default function AdminLink() {
-    const { isSignedIn, getToken } = useAuth();
-    const [isAdmin, setIsAdmin] = useState(false);
-
-    useEffect(() => {
-        if (!isSignedIn) return;
-
-        let cancelled = false;
-        const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-        getToken()
-            .then((token) =>
-                fetch(`${base}/auth/role`, { headers: { Authorization: `Bearer ${token}` } })
-                    .then((r) => r.json())
-                    .then((data) => {
-                        if (!cancelled && data.role === "admin") setIsAdmin(true);
-                    })
-            )
-            .catch(() => null);
-        return () => { cancelled = true; };
-    }, [isSignedIn, getToken]);
+    const { isAdmin } = useRole();
 
     if (!isAdmin) return null;
 

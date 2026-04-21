@@ -31,7 +31,7 @@ export interface MotionPicture {
     medianScore: number;
     motionPictureRating: string;
     motionPictureRatingDesc: string;
-    officalSite: string;
+    officialSite: string;
     originalTitle: string;
     overview: string;
     posterUrl: string;

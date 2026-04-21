@@ -24,8 +24,10 @@ export interface MotionPictureSearchResponse {
 }
 
 function mapDtoToMotionPicture(dto: MotionPictureDto): MotionPicture {
+    const { officalSite, ...rest } = dto;
     return {
-        ...dto,
+        ...rest,
+        officialSite: officalSite,
         releaseDate: new Date(dto.releaseDate),
         tags: dto.tags ?? [],
         genres: dto.genres ?? [],

@@ -22,38 +22,43 @@ export function useWatchlist() {
 }
 
 export default function WatchlistProvider({ children }: { children: React.ReactNode }) {
-    const { getToken, isSignedIn } = useAuth();
+    const { getToken, isSignedIn, userId } = useAuth();
     const [ids, setIds] = useState<Set<number>>(new Set());
     const [isLoaded, setIsLoaded] = useState(false);
-    const fetchedRef = useRef(false);
+    const fetchedForRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!isSignedIn || fetchedRef.current) return;
-        fetchedRef.current = true;
+        // Sign-out or user change: reset state so re-sign-in fetches fresh data.
+        if (!isSignedIn || !userId) {
+            setIds(new Set());
+            setIsLoaded(true);
+            fetchedForRef.current = null;
+            return;
+        }
 
-        getToken().then((token) =>
-            fetch(`${API}/watchlist/mine`, {
-                headers: { Authorization: `Bearer ${token}` },
+        if (fetchedForRef.current === userId) return;
+        fetchedForRef.current = userId;
+
+        setIsLoaded(false);
+        getToken()
+            .then((token) =>
+                fetch(`${API}/watchlist/mine`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                })
+            )
+            .then((res) => (res.ok ? res.json() : []))
+            .then((items: Array<{ motionPictureId: number }>) => {
+                setIds(new Set(items.map((i) => i.motionPictureId)));
             })
-        ).then((res) => (res.ok ? res.json() : []))
-        .then((items: Array<{ motionPictureId: number }>) => {
-            setIds(new Set(items.map((i) => i.motionPictureId)));
-        })
-        .catch(() => {})
-        .finally(() => setIsLoaded(true));
-    }, [isSignedIn, getToken]);
-
-    // Mark loaded immediately for signed-out users — no fetch needed.
-    useEffect(() => {
-        if (isSignedIn === false) setIsLoaded(true);
-    }, [isSignedIn]);
+            .catch(() => {})
+            .finally(() => setIsLoaded(true));
+    }, [isSignedIn, userId, getToken]);
 
     const isWatchlisted = useCallback((id: number) => ids.has(id), [ids]);
 
     const toggle = useCallback(async (id: number): Promise<"added" | "removed"> => {
         const adding = !ids.has(id);
 
-        // Optimistic update.
         setIds((prev) => {
             const next = new Set(prev);
             adding ? next.add(id) : next.delete(id);
@@ -68,7 +73,6 @@ export default function WatchlistProvider({ children }: { children: React.ReactN
             });
             if (!res.ok && res.status !== 409) throw new Error("toggle failed");
         } catch {
-            // Roll back on failure.
             setIds((prev) => {
                 const next = new Set(prev);
                 adding ? next.delete(id) : next.add(id);

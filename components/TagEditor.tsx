@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import type { TagDto } from "../types/motion-picture";
+import { useRole } from "./RoleProvider";
 
 interface TagEditorProps {
     motionPictureId: number;
@@ -10,8 +11,8 @@ interface TagEditorProps {
 }
 
 export default function TagEditor({ motionPictureId, initialTags }: TagEditorProps) {
-    const { isSignedIn, getToken } = useAuth();
-    const [isCurator, setIsCurator] = useState(false);
+    const { getToken } = useAuth();
+    const { isCurator } = useRole();
     const [allTags, setAllTags] = useState<TagDto[]>([]);
     const [currentTags, setCurrentTags] = useState<TagDto[]>(initialTags);
     const [selectedTagId, setSelectedTagId] = useState<string>("");
@@ -20,29 +21,14 @@ export default function TagEditor({ motionPictureId, initialTags }: TagEditorPro
     const base = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     useEffect(() => {
-        if (!isSignedIn) return;
-
+        if (!isCurator) return;
         let cancelled = false;
-
-        getToken()
-            .then((token) =>
-                fetch(`${base}/auth/role`, { headers: { Authorization: `Bearer ${token}` } })
-                    .then((r) => r.json())
-                    .then((data) => {
-                        if (!cancelled && (data.role === "trusted_curator" || data.role === "admin")) {
-                            setIsCurator(true);
-                        }
-                    })
-            )
-            .catch(() => null);
-
         fetch(`${base}/tags`)
             .then((r) => r.json())
             .then((data) => { if (!cancelled) setAllTags(data); })
             .catch(() => null);
-
         return () => { cancelled = true; };
-    }, [isSignedIn, getToken, base]);
+    }, [isCurator, base]);
 
     if (!isCurator) return null;
 

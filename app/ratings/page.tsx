@@ -25,7 +25,9 @@ function ScorePill({ label, value }: { label: string; value: number }) {
     return (
         <div className="flex flex-col items-center">
             <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">{label}</span>
-            <span className="mt-0.5 text-sm font-semibold text-zinc-200">{value.toFixed(1)}</span>
+            <span className="mt-0.5 text-sm font-semibold text-zinc-200">
+                {value != null ? value.toFixed(1) : "—"}
+            </span>
         </div>
     );
 }
@@ -84,7 +86,7 @@ export default async function MyRatingsPage() {
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
                                             <p className="font-medium text-zinc-100">{r.originalTitle}</p>
-                                            {r.releaseYear && (
+                                            {r.releaseYear != null && r.releaseYear > 0 && (
                                                 <p className="text-sm text-zinc-500">{r.releaseYear}</p>
                                             )}
                                         </div>

@@ -18,7 +18,7 @@ export interface MotionPictureDto {
     medianScore: number;
     motionPictureRating: string;
     motionPictureRatingDesc: string;
-    officalSite: string;
+    officalSite: string;  // typo in API — mapped to officialSite in MotionPicture
     originalTitle: string;
     overview: string;
     posterUrl: string;

@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
 import ToastProvider from "../components/ToastProvider";
 import WatchlistProvider from "../components/WatchlistProvider";
+import RoleProvider from "../components/RoleProvider";
 
 export const metadata: Metadata = {
   title: "Darkly",
@@ -23,12 +24,14 @@ export default function RootLayout({
       <body className="min-h-screen bg-zinc-950 text-zinc-100">
         <ClerkProvider>
           <ToastProvider>
+            <RoleProvider>
             <WatchlistProvider>
               <Header overlay />
               <div className="relative pb-16 md:pb-0">{children}</div>
               <Footer />
               <BottomNav />
             </WatchlistProvider>
+            </RoleProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>
