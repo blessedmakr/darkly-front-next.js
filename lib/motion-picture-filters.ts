@@ -11,7 +11,7 @@ export interface TagFilterValue {
     tagType: TagType;
 }
 
-export type SortBy = "releaseDate" | "fearScore" | "goreScore" | "atmosphereScore" | "score";
+export type SortBy = "releaseDate" | "fearScore" | "goreScore" | "atmosphereScore" | "score" | "id";
 export type SortDir = "asc" | "desc";
 
 export interface MotionPictureFilterState {
