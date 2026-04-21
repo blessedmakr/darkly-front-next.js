@@ -72,20 +72,10 @@ export default async function MotionPictureDetailPage({
         notFound();
     }
 
-    const [motionPicture, isAdmin] = await Promise.all([
-        getMotionPictureById(numericId).catch(() => null),
-        auth().then(async ({ getToken }) => {
-            const token = await getToken();
-            if (!token) return false;
-            const roleRes = await fetch(
-                `${process.env.MOTION_PICTURES_API_BASE_URL}/auth/role`,
-                { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
-            );
-            if (!roleRes.ok) return false;
-            const { role } = await roleRes.json();
-            return role === "admin";
-        }).catch(() => false),
-    ]);
+    const { userId } = await auth();
+    const isAdmin = !!userId && userId === process.env.APP_ADMIN_USER_ID;
+
+    const motionPicture = await getMotionPictureById(numericId).catch(() => null);
 
     if (!motionPicture) notFound();
 

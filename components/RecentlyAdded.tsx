@@ -45,7 +45,7 @@ export default async function RecentlyAdded() {
                             fearScore: film.fearScore ?? 0,
                             goreScore: film.goreScore ?? 0,
                             atmosphereScore: film.atmosphereScore ?? 0,
-                            releaseYear: new Date(film.releaseDate).getFullYear(),
+                            releaseYear: film.releaseDate ? new Date(film.releaseDate).getFullYear() : 0,
                         }} />
                     </div>
                 ))}

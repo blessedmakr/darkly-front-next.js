@@ -26,7 +26,7 @@ export default function MotionPicturePreviewCard({ film }: { film: MotionPicture
                 <div className="px-4 pt-4">
                     <h2 className="text-base font-semibold leading-tight tracking-tight text-zinc-100 line-clamp-2 group-hover:text-red-400">
                         {film.originalTitle}
-                        <span className="ml-2 text-xs font-normal text-zinc-500">{film.releaseYear}</span>
+                        {film.releaseYear > 0 && <span className="ml-2 text-xs font-normal text-zinc-500">{film.releaseYear}</span>}
                     </h2>
                 </div>
 

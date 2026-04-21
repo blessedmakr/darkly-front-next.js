@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 interface Toast {
@@ -23,16 +23,28 @@ export function useToast() {
 export default function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([]);
     const counter = useRef(0);
+    const timers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+
+    useEffect(() => {
+        return () => { timers.current.forEach(clearTimeout); };
+    }, []);
 
     const showToast = useCallback((message: string, options?: { href?: string; linkLabel?: string }) => {
         const id = ++counter.current;
         setToasts((prev) => [...prev, { id, message, ...options }]);
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== id));
+            timers.current.delete(id);
         }, 5000);
+        timers.current.set(id, timer);
     }, []);
 
     function dismiss(id: number) {
+        const timer = timers.current.get(id);
+        if (timer) {
+            clearTimeout(timer);
+            timers.current.delete(id);
+        }
         setToasts((prev) => prev.filter((t) => t.id !== id));
     }
 
