@@ -7,6 +7,7 @@ import {
     getReleaseYear,
 } from "../lib/motion-picture";
 import TagsPopover from "./TagsPopover";
+import WatchlistBookmark from "./WatchlistBookmark";
 
 interface MotionPictureCardProps {
     motionPicture: MotionPicture;
@@ -56,6 +57,10 @@ export default function MotionPictureCard({
                                 </p>
                             </div>
                         )}
+
+                        <div className="absolute right-2 top-2">
+                            <WatchlistBookmark motionPictureId={motionPicture.id} />
+                        </div>
                     </div>
 
                     <div className="flex items-start gap-2 px-4 pt-4">
