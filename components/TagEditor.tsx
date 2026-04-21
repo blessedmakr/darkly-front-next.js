@@ -24,23 +24,17 @@ export default function TagEditor({ motionPictureId, initialTags }: TagEditorPro
 
         let cancelled = false;
 
-        const cached = sessionStorage.getItem("darkly:role");
-        if (cached) {
-            if (cached === "trusted_curator" || cached === "admin") setIsCurator(true);
-        } else {
-            getToken()
-                .then((token) =>
-                    fetch(`${base}/auth/role`, { headers: { Authorization: `Bearer ${token}` } })
-                        .then((r) => r.json())
-                        .then((data) => {
-                            sessionStorage.setItem("darkly:role", data.role ?? "");
-                            if (!cancelled && (data.role === "trusted_curator" || data.role === "admin")) {
-                                setIsCurator(true);
-                            }
-                        })
-                )
-                .catch(() => null);
-        }
+        getToken()
+            .then((token) =>
+                fetch(`${base}/auth/role`, { headers: { Authorization: `Bearer ${token}` } })
+                    .then((r) => r.json())
+                    .then((data) => {
+                        if (!cancelled && (data.role === "trusted_curator" || data.role === "admin")) {
+                            setIsCurator(true);
+                        }
+                    })
+            )
+            .catch(() => null);
 
         fetch(`${base}/tags`)
             .then((r) => r.json())

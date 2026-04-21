@@ -46,7 +46,7 @@ export default function MotionPicturePreviewCard({ film }: { film: MotionPicture
                         <div key={label} className="flex flex-col items-center">
                             <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600">{label}</span>
                             <span className={`text-xs font-semibold tabular-nums ${color} ${shadow}`}>
-                                {value > 0 ? value.toFixed(1) : "—"}
+                                {value != null ? value.toFixed(1) : "—"}
                             </span>
                         </div>
                     ))}

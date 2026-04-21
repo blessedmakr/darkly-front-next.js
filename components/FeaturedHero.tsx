@@ -82,13 +82,13 @@ export default function FeaturedHero({ motionPicture }: FeaturedHeroProps) {
                     )}
 
                     {/* Dimension scores */}
-                    {(motionPicture.fearScore > 0 || motionPicture.goreScore > 0 || motionPicture.atmosphereScore > 0) && (
+                    {motionPicture.scoreRatingCount > 0 && (
                         <div className="mt-5 flex gap-4">
                             {[
                                 { label: "Fear", value: motionPicture.fearScore, border: "border-red-500/30", glow: "shadow-[0_0_18px_rgba(239,68,68,0.18)]", text: "text-red-400", sub: "text-red-500/50" },
                                 { label: "Gore", value: motionPicture.goreScore, border: "border-orange-500/30", glow: "shadow-[0_0_18px_rgba(249,115,22,0.18)]", text: "text-orange-400", sub: "text-orange-500/50" },
                                 { label: "Atmosphere", value: motionPicture.atmosphereScore, border: "border-violet-500/30", glow: "shadow-[0_0_18px_rgba(139,92,246,0.18)]", text: "text-violet-400", sub: "text-violet-500/50" },
-                            ].filter(({ value }) => value > 0).map(({ label, value, border, glow, text, sub }) => (
+                            ].map(({ label, value, border, glow, text, sub }) => (
                                 <div key={label} className={`rounded-xl border bg-zinc-900/60 px-4 py-3 backdrop-blur-sm ${border} ${glow}`}>
                                     <p className="text-[9px] uppercase tracking-[0.25em] text-zinc-500">{label}</p>
                                     <div className="mt-1 flex items-baseline gap-1">

@@ -10,7 +10,7 @@ import {
     getReleaseYear,
 } from "../../../lib/motion-picture";
 import RatingForm from "../../../components/RatingForm";
-import WatchlistButton from "../../../components/WatchlistButton";
+import WatchlistBookmark from "../../../components/WatchlistBookmark";
 import ReviewsSection from "../../../components/ReviewsSection";
 import SimilarFilmsSection from "../../../components/SimilarFilmsSection";
 import ViewTracker from "../../../components/ViewTracker";
@@ -172,7 +172,7 @@ export default async function MotionPictureDetailPage({
                             </div>
 
                             <div className="mt-6">
-                            <WatchlistButton motionPictureId={motionPicture.id} />
+                            <WatchlistBookmark motionPictureId={motionPicture.id} />
                         </div>
 
                         {motionPicture.tags.length > 0 ? (
@@ -222,7 +222,7 @@ export default async function MotionPictureDetailPage({
                         </div>
                         <div className="text-right">
                             <p className="text-3xl font-bold tabular-nums text-zinc-100 leading-none">
-                                {motionPicture.score != null && motionPicture.score > 0
+                                {motionPicture.scoreRatingCount > 0
                                     ? motionPicture.score.toFixed(1)
                                     : "—"}
                             </p>
@@ -240,13 +240,13 @@ export default async function MotionPictureDetailPage({
                                 <div className="flex items-baseline justify-between">
                                     <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">{label}</span>
                                     <span className={`text-sm font-semibold tabular-nums ${text}`}>
-                                        {value != null && value > 0 ? value.toFixed(1) : "—"}
+                                        {value != null ? value.toFixed(1) : "—"}
                                     </span>
                                 </div>
                                 <div className="mt-1.5 h-1.5 w-full rounded-full bg-zinc-800">
                                     <div
                                         className={`h-1.5 rounded-full ${bar} transition-all`}
-                                        style={{ width: value != null && value > 0 ? `${(value / 10) * 100}%` : "0%" }}
+                                        style={{ width: value != null ? `${(value / 10) * 100}%` : "0%" }}
                                     />
                                 </div>
                             </div>

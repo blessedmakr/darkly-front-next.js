@@ -47,7 +47,7 @@ export default function Header({ overlay = false }: HeaderProps) {
                                     href="/motion-pictures"
                                     className="transition hover:text-white"
                                 >
-                                    Motion Pictures
+                                    Discover
                                 </Link>
                             </li>
                         </ul>

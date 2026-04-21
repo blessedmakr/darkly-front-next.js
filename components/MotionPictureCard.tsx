@@ -82,7 +82,7 @@ export default function MotionPictureCard({
                             </p>
                         </div>
 
-                        {motionPicture.score > 0 && (
+                        {motionPicture.scoreRatingCount > 0 && (
                             <div className="shrink-0 text-right">
                                 <p className="text-xl font-bold tabular-nums leading-none text-lime-400">
                                     {motionPicture.score.toFixed(1)}
@@ -107,13 +107,13 @@ export default function MotionPictureCard({
                         </div>
                     )}
 
-                    {(motionPicture.fearScore > 0 || motionPicture.goreScore > 0 || motionPicture.atmosphereScore > 0) && (
+                    {motionPicture.scoreRatingCount > 0 && (
                         <div className="mt-4 flex justify-around px-1 py-2">
                             {[
                                 { label: "Fear", value: motionPicture.fearScore,       text: "text-red-300",    glow: "drop-shadow-[0_0_10px_rgba(252,165,165,0.9)]"  },
                                 { label: "Gore", value: motionPicture.goreScore,       text: "text-orange-300", glow: "drop-shadow-[0_0_10px_rgba(253,186,116,0.9)]"  },
                                 { label: "Atm.", value: motionPicture.atmosphereScore, text: "text-violet-300", glow: "drop-shadow-[0_0_10px_rgba(196,181,253,0.9)]"  },
-                            ].filter(({ value }) => value > 0).map(({ label, value, text, glow }) => (
+                            ].map(({ label, value, text, glow }) => (
                                 <div key={label} className="flex flex-col items-center">
                                     <span className={`text-lg font-black tabular-nums leading-none ${text} ${glow}`}>
                                         {value.toFixed(1)}
