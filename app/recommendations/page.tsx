@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getRecommendations } from "../../services/motion-pictures";
+import { getRecommendations, getSimilarFilms } from "../../services/motion-pictures";
 import MotionPicturePreviewCard from "../../components/MotionPicturePreviewCard";
 import type { MotionPicturePreviewDto } from "../../types/motion-picture";
 
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
     title: "Recommended for You | Darkly",
 };
 
-export default async function RecommendationsPage() {
+interface RecommendationsPageProps {
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function RecommendationsPage({ searchParams }: RecommendationsPageProps) {
     const { getToken, userId } = await auth();
 
     if (!userId) {
@@ -22,6 +26,13 @@ export default async function RecommendationsPage() {
     const token = await getToken();
     if (!token) redirect("/");
 
+    const resolvedParams = (await searchParams) ?? {};
+    const similarToParam = resolvedParams.similarTo;
+    const similarToId =
+        typeof similarToParam === "string" && !Number.isNaN(Number(similarToParam))
+            ? Number(similarToParam)
+            : null;
+
     const ratingsRes = await fetch(
         `${process.env.MOTION_PICTURES_API_BASE_URL}/ratings/mine`,
         { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
@@ -30,13 +41,16 @@ export default async function RecommendationsPage() {
     const ratingCount = ratings.length;
 
     let films: MotionPicturePreviewDto[] = [];
+    let similarFilms: MotionPicturePreviewDto[] = [];
+
     if (ratingCount >= RATING_THRESHOLD) {
-        try {
-            films = await getRecommendations(token);
-        } catch {
-            films = [];
-        }
+        [films, similarFilms] = await Promise.all([
+            getRecommendations(token).catch(() => []),
+            similarToId ? getSimilarFilms(similarToId).catch(() => []) : Promise.resolve([]),
+        ]);
     }
+
+    const seedFilm = similarToId ? films.find((f) => f.id === similarToId) ?? null : null;
 
     return (
         <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
@@ -88,11 +102,42 @@ export default async function RecommendationsPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {films.map((film) => (
-                            <MotionPicturePreviewCard key={film.id} film={film} />
-                        ))}
-                    </div>
+                    <>
+                        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                            {films.map((film) => (
+                                <div key={film.id} className="flex flex-col gap-1">
+                                    <MotionPicturePreviewCard film={film} />
+                                    <Link
+                                        href={`?similarTo=${film.id}`}
+                                        className={`py-1 text-center text-xs transition-colors ${
+                                            similarToId === film.id
+                                                ? "font-medium text-lime-400"
+                                                : "text-zinc-600 hover:text-zinc-400"
+                                        }`}
+                                    >
+                                        More like this
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+
+                        {similarToId && similarFilms.length > 0 && (
+                            <section id="similar" className="mt-16 scroll-mt-24">
+                                <div className="mb-6 flex items-center gap-4">
+                                    <div className="h-px flex-1 bg-zinc-800" />
+                                    <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">
+                                        More Like {seedFilm?.originalTitle ?? "This"}
+                                    </p>
+                                    <div className="h-px flex-1 bg-zinc-800" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                                    {similarFilms.map((film) => (
+                                        <MotionPicturePreviewCard key={film.id} film={film} />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </>
                 )}
             </div>
         </main>

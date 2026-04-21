@@ -1,9 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { MotionPicturePreviewDto } from "../types/motion-picture";
+import WatchlistBookmark from "./WatchlistBookmark";
 
 export default function MotionPicturePreviewCard({ film }: { film: MotionPicturePreviewDto }) {
     return (
+        <div className="relative w-full">
+            <div className="absolute right-2 top-2 z-10">
+                <WatchlistBookmark motionPictureId={film.id} />
+            </div>
+
         <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 transition hover:border-zinc-600 hover:bg-zinc-900">
             <Link href={`/motion-pictures/${film.id}`} className="group block">
                 <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
@@ -47,5 +53,6 @@ export default function MotionPicturePreviewCard({ film }: { film: MotionPicture
                 </div>
             </Link>
         </article>
+        </div>
     );
 }
