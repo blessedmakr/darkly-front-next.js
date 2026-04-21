@@ -32,6 +32,11 @@ export default function MotionPictureCard({
 
     return (
         <div className="relative w-full">
+            {/* Bookmark sits outside the <Link> to avoid invalid <a><button> nesting */}
+            <div className="absolute right-2 top-2 z-10">
+                <WatchlistBookmark motionPictureId={motionPicture.id} />
+            </div>
+
             <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 transition hover:border-zinc-600 hover:bg-zinc-900">
                 <Link href={`/motion-pictures/${motionPicture.id}`} className="group block">
                     <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
@@ -57,10 +62,6 @@ export default function MotionPictureCard({
                                 </p>
                             </div>
                         )}
-
-                        <div className="absolute right-2 top-2">
-                            <WatchlistBookmark motionPictureId={motionPicture.id} />
-                        </div>
                     </div>
 
                     <div className="flex items-start gap-2 px-4 pt-4">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth, SignInButton } from "@clerk/nextjs";
+import { useWatchlist } from "./WatchlistProvider";
 import { useToast } from "./ToastProvider";
 
 interface WatchlistBookmarkProps {
@@ -9,68 +10,39 @@ interface WatchlistBookmarkProps {
 }
 
 export default function WatchlistBookmark({ motionPictureId }: WatchlistBookmarkProps) {
-    const { getToken, isSignedIn } = useAuth();
+    const { isSignedIn } = useAuth();
+    const { isLoaded, isWatchlisted, toggle } = useWatchlist();
     const { showToast } = useToast();
-    const [inWatchlist, setInWatchlist] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [toggling, setToggling] = useState(false);
 
-    const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
-    useEffect(() => {
-        if (!isSignedIn) {
-            setLoading(false);
-            return;
-        }
-        let cancelled = false;
-        getToken()
-            .then((token) =>
-                fetch(`${API}/watchlist/${motionPictureId}/status`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
-            )
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data) => { if (data && !cancelled) setInWatchlist(data.inWatchlist); })
-            .catch(() => {})
-            .finally(() => { if (!cancelled) setLoading(false); });
-        return () => { cancelled = true; };
-    }, [isSignedIn, motionPictureId, getToken, API]);
-
-    async function toggle(e: React.MouseEvent) {
+    async function handleToggle(e: React.MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
-        if (!isSignedIn || toggling) return;
-        const optimistic = !inWatchlist;
-        setInWatchlist(optimistic);
+        if (toggling) return;
         setToggling(true);
         try {
-            const token = await getToken();
-            await fetch(`${API}/watchlist/${motionPictureId}`, {
-                method: inWatchlist ? "DELETE" : "POST",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!inWatchlist) {
+            const result = await toggle(motionPictureId);
+            if (result === "added") {
                 showToast("Added to watchlist. Seen it already?", {
                     href: `/motion-pictures/${motionPictureId}`,
                     linkLabel: "Rate it",
                 });
             }
         } catch {
-            setInWatchlist(!optimistic);
+            // toggle rolls back internally on failure
         } finally {
             setToggling(false);
         }
     }
 
     const baseClass =
-        "flex h-8 w-8 items-center justify-center rounded-full transition-all disabled:opacity-50";
+        "flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-sm transition-all disabled:opacity-50";
 
     if (!isSignedIn) {
         return (
             <SignInButton mode="modal">
                 <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    className={`${baseClass} bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 backdrop-blur-sm`}
+                    className={`${baseClass} bg-zinc-900/80 text-zinc-400 hover:text-zinc-100`}
                     aria-label="Sign in to add to watchlist"
                 >
                     <BookmarkIcon filled={false} />
@@ -79,19 +51,21 @@ export default function WatchlistBookmark({ motionPictureId }: WatchlistBookmark
         );
     }
 
-    if (loading) {
+    if (!isLoaded) {
         return (
-            <div className={`${baseClass} bg-zinc-900/80 backdrop-blur-sm`}>
+            <div className={`${baseClass} bg-zinc-900/80`}>
                 <div className="h-4 w-4 rounded bg-zinc-700 animate-pulse" />
             </div>
         );
     }
 
+    const inWatchlist = isWatchlisted(motionPictureId);
+
     return (
         <button
-            onClick={toggle}
+            onClick={handleToggle}
             disabled={toggling}
-            className={`${baseClass} backdrop-blur-sm ${
+            className={`${baseClass} ${
                 inWatchlist
                     ? "bg-lime-400/20 text-lime-400 hover:bg-lime-400/30"
                     : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-100"
