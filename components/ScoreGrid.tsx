@@ -5,13 +5,16 @@ interface Props {
     fearScore: number | null;
     atmosphereScore: number | null;
     goreScore: number | null;
-    className?: string;
+    tight?: boolean;
 }
 
-export default function ScoreGrid({ score, fearScore, atmosphereScore, goreScore, className }: Props) {
+export default function ScoreGrid({ score, fearScore, atmosphereScore, goreScore, tight }: Props) {
     const values = { score, fearScore, atmosphereScore, goreScore };
     return (
-        <div className={`grid grid-cols-2 gap-x-3 gap-y-1 ${className ?? ""}`}>
+        <div className={tight
+            ? "grid grid-cols-[auto_auto] gap-x-2 gap-y-0.5 w-fit"
+            : "grid grid-cols-2 gap-x-3 gap-y-1"
+        }>
             {SCORE_META.map(({ key, label, color, shadow }) => (
                 <div key={key} className="flex flex-col items-center">
                     <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600">{label}</span>

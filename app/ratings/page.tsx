@@ -57,7 +57,7 @@ export default async function MyRatingsPage() {
                             <Link
                                 key={r.motionPictureId}
                                 href={`/motion-pictures/${r.motionPictureId}`}
-                                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-3 py-3 pr-2 transition-colors hover:border-zinc-700"
+                                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-3 py-2 pr-2 transition-colors hover:border-zinc-700"
                             >
                                 <div className="shrink-0 overflow-hidden rounded">
                                     {r.posterUrl ? (
@@ -83,7 +83,7 @@ export default async function MyRatingsPage() {
                                             fearScore={r.fearScore}
                                             atmosphereScore={r.atmosphereScore}
                                             goreScore={r.goreScore}
-                                            className="w-fit"
+                                            tight
                                         />
                                     </div>
                                 </div>
