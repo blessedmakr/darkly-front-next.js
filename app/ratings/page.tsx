@@ -25,8 +25,8 @@ interface UserRating {
 function ScorePill({ label, value }: { label: string; value: number }) {
     return (
         <div className="flex flex-col items-center">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">{label}</span>
-            <span className="mt-0.5 text-sm font-semibold text-zinc-200">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600">{label}</span>
+            <span className="text-xs font-semibold text-zinc-300">
                 {value != null ? value.toFixed(1) : "—"}
             </span>
         </div>
@@ -53,7 +53,7 @@ export default async function MyRatingsPage() {
 
     return (
         <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
-            <div className="mx-auto max-w-3xl">
+            <div className="mx-auto max-w-5xl">
                 <h1 className="text-3xl font-semibold tracking-tight">My Ratings</h1>
                 <p className="mt-2 text-zinc-400">
                     {ratings.length === 0
@@ -62,48 +62,37 @@ export default async function MyRatingsPage() {
                 </p>
 
                 {ratings.length > 0 && (
-                    <div className="mt-10 space-y-4">
+                    <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                         {ratings.map((r) => (
                             <Link
                                 key={r.motionPictureId}
                                 href={`/motion-pictures/${r.motionPictureId}`}
-                                className="flex gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-colors hover:border-zinc-700"
+                                className="flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700"
                             >
                                 <div className="shrink-0">
                                     {r.posterUrl ? (
                                         <Image
                                             src={r.posterUrl}
                                             alt={r.originalTitle}
-                                            width={56}
-                                            height={84}
-                                            className="rounded-md object-cover"
+                                            width={40}
+                                            height={60}
+                                            className="rounded object-cover"
                                         />
                                     ) : (
-                                        <div className="h-[84px] w-[56px] rounded-md bg-zinc-800" />
+                                        <div className="h-[60px] w-[40px] rounded bg-zinc-800" />
                                     )}
                                 </div>
-
                                 <div className="min-w-0 flex-1">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <p className="font-medium text-zinc-100">{r.originalTitle}</p>
-                                            {r.releaseYear != null && r.releaseYear > 0 && (
-                                                <p className="text-sm text-zinc-500">{r.releaseYear}</p>
-                                            )}
-                                        </div>
-                                        <div className="flex shrink-0 gap-4">
-                                            <ScorePill label="Overall" value={r.overallScore} />
-                                            <ScorePill label="Fear"    value={r.fearScore} />
-                                            <ScorePill label="Atmos"   value={r.atmosphereScore} />
-                                            <ScorePill label="Gore"    value={r.goreScore} />
-                                        </div>
-                                    </div>
-
-                                    {r.reviewText && (
-                                        <p className="mt-2 line-clamp-2 text-sm text-zinc-400">
-                                            {r.reviewText}
-                                        </p>
+                                    <p className="line-clamp-2 text-sm font-medium leading-tight text-zinc-100">{r.originalTitle}</p>
+                                    {r.releaseYear != null && r.releaseYear > 0 && (
+                                        <p className="mt-0.5 text-xs text-zinc-500">{r.releaseYear}</p>
                                     )}
+                                    <div className="mt-2 flex gap-3">
+                                        <ScorePill label="Overall" value={r.overallScore} />
+                                        <ScorePill label="Fear"    value={r.fearScore} />
+                                        <ScorePill label="Atmos"   value={r.atmosphereScore} />
+                                        <ScorePill label="Gore"    value={r.goreScore} />
+                                    </div>
                                 </div>
                             </Link>
                         ))}
