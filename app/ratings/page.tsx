@@ -87,7 +87,7 @@ export default async function MyRatingsPage() {
                                     {r.releaseYear != null && r.releaseYear > 0 && (
                                         <p className="mt-0.5 text-xs text-zinc-500">{r.releaseYear}</p>
                                     )}
-                                    <div className="mt-2 flex gap-3">
+                                    <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
                                         <ScorePill label="Overall" value={r.overallScore} />
                                         <ScorePill label="Fear"    value={r.fearScore} />
                                         <ScorePill label="Atmos"   value={r.atmosphereScore} />

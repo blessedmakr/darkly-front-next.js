@@ -27,18 +27,6 @@ export default async function Discovery() {
                     <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-100">
                         {tags.length > 0 ? tags.join(" · ") : "Curated Selection"}
                     </h2>
-                    {tags.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {tags.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="rounded-full border border-red-500/20 bg-red-500/5 px-3 py-0.5 text-xs text-red-400"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    )}
                 </div>
                 <Link
                     href="/motion-pictures"
