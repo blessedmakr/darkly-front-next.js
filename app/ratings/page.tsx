@@ -57,22 +57,22 @@ export default async function MyRatingsPage() {
                             <Link
                                 key={r.motionPictureId}
                                 href={`/motion-pictures/${r.motionPictureId}`}
-                                className="flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700"
+                                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-3 py-3 pr-2 transition-colors hover:border-zinc-700"
                             >
-                                <div className="relative w-10 min-h-[80px] shrink-0 self-stretch overflow-hidden rounded">
+                                <div className="shrink-0 overflow-hidden rounded">
                                     {r.posterUrl ? (
                                         <Image
                                             src={r.posterUrl}
                                             alt={r.originalTitle}
-                                            fill
+                                            width={40}
+                                            height={60}
                                             className="object-cover"
-                                            sizes="40px"
                                         />
                                     ) : (
-                                        <div className="h-full w-full bg-zinc-800" />
+                                        <div className="w-10 h-[60px] bg-zinc-800" />
                                     )}
                                 </div>
-                                <div className="min-w-0 flex-1 flex flex-col justify-center">
+                                <div className="min-w-0 flex-1 flex flex-col items-start justify-center">
                                     <p className="line-clamp-2 text-sm font-medium leading-tight text-zinc-100">{r.originalTitle}</p>
                                     {r.releaseYear != null && r.releaseYear > 0 && (
                                         <p className="mt-0.5 text-xs text-zinc-500">{r.releaseYear}</p>
@@ -83,6 +83,7 @@ export default async function MyRatingsPage() {
                                             fearScore={r.fearScore}
                                             atmosphereScore={r.atmosphereScore}
                                             goreScore={r.goreScore}
+                                            className="w-fit"
                                         />
                                     </div>
                                 </div>
