@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import ScoreGrid from "../../components/ScoreGrid";
 
 export const metadata: Metadata = {
     title: "My Ratings",
@@ -20,17 +21,6 @@ interface UserRating {
     goreScore: number;
     reviewText: string | null;
     ratedAt: string;
-}
-
-function ScorePill({ label, value }: { label: string; value: number }) {
-    return (
-        <div className="flex flex-col items-center">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600">{label}</span>
-            <span className="text-xs font-semibold text-zinc-300">
-                {value != null ? value.toFixed(1) : "—"}
-            </span>
-        </div>
-    );
 }
 
 export default async function MyRatingsPage() {
@@ -69,29 +59,31 @@ export default async function MyRatingsPage() {
                                 href={`/motion-pictures/${r.motionPictureId}`}
                                 className="flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700"
                             >
-                                <div className="shrink-0">
+                                <div className="relative w-10 min-h-[80px] shrink-0 self-stretch overflow-hidden rounded">
                                     {r.posterUrl ? (
                                         <Image
                                             src={r.posterUrl}
                                             alt={r.originalTitle}
-                                            width={40}
-                                            height={60}
-                                            className="rounded object-cover"
+                                            fill
+                                            className="object-cover"
+                                            sizes="40px"
                                         />
                                     ) : (
-                                        <div className="h-[60px] w-[40px] rounded bg-zinc-800" />
+                                        <div className="h-full w-full bg-zinc-800" />
                                     )}
                                 </div>
-                                <div className="min-w-0 flex-1">
+                                <div className="min-w-0 flex-1 flex flex-col justify-center">
                                     <p className="line-clamp-2 text-sm font-medium leading-tight text-zinc-100">{r.originalTitle}</p>
                                     {r.releaseYear != null && r.releaseYear > 0 && (
                                         <p className="mt-0.5 text-xs text-zinc-500">{r.releaseYear}</p>
                                     )}
-                                    <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
-                                        <ScorePill label="Overall" value={r.overallScore} />
-                                        <ScorePill label="Fear"    value={r.fearScore} />
-                                        <ScorePill label="Atmos"   value={r.atmosphereScore} />
-                                        <ScorePill label="Gore"    value={r.goreScore} />
+                                    <div className="mt-2">
+                                        <ScoreGrid
+                                            score={r.overallScore}
+                                            fearScore={r.fearScore}
+                                            atmosphereScore={r.atmosphereScore}
+                                            goreScore={r.goreScore}
+                                        />
                                     </div>
                                 </div>
                             </Link>
