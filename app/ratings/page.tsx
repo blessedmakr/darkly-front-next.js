@@ -52,32 +52,35 @@ export default async function MyRatingsPage() {
                 </p>
 
                 {ratings.length > 0 && (
-                    <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="mt-6 flex flex-wrap gap-2">
                         {ratings.map((r) => (
                             <Link
                                 key={r.motionPictureId}
                                 href={`/motion-pictures/${r.motionPictureId}`}
-                                className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-3 py-2 pr-2 transition-colors hover:border-zinc-700"
+                                className="flex w-fit flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 transition-colors hover:border-zinc-700"
                             >
-                                <div className="shrink-0 overflow-hidden rounded">
-                                    {r.posterUrl ? (
-                                        <Image
-                                            src={r.posterUrl}
-                                            alt={r.originalTitle}
-                                            width={40}
-                                            height={60}
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-[60px] bg-zinc-800" />
+                                <div className="flex items-baseline gap-1.5 px-2 pt-1.5 pb-1" style={{ maxWidth: 160 }}>
+                                    <p className="min-w-0 truncate text-sm font-medium leading-tight text-zinc-100">{r.originalTitle}</p>
+                                    {r.releaseYear != null && r.releaseYear > 0 && (
+                                        <span className="shrink-0 text-[10px] text-zinc-500">{r.releaseYear}</span>
                                     )}
                                 </div>
-                                <div className="min-w-0 flex-1 flex flex-col items-start justify-center">
-                                    <p className="line-clamp-2 text-sm font-medium leading-tight text-zinc-100">{r.originalTitle}</p>
-                                    {r.releaseYear != null && r.releaseYear > 0 && (
-                                        <p className="mt-0.5 text-xs text-zinc-500">{r.releaseYear}</p>
-                                    )}
-                                    <div className="mt-2">
+                                <div className="flex items-center">
+                                    <div className="shrink-0">
+                                        {r.posterUrl ? (
+                                            <Image
+                                                src={r.posterUrl}
+                                                alt={r.originalTitle}
+                                                width={56}
+                                                height={84}
+                                                className="block object-cover"
+                                                sizes="56px"
+                                            />
+                                        ) : (
+                                            <div className="h-[84px] w-14 bg-zinc-800" />
+                                        )}
+                                    </div>
+                                    <div className="flex items-center px-2">
                                         <ScoreGrid
                                             score={r.overallScore}
                                             fearScore={r.fearScore}
