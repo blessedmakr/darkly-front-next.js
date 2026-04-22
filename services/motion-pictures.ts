@@ -108,6 +108,17 @@ export async function getRecommendations(token: string): Promise<MotionPicturePr
     });
 }
 
+export interface CuratedCollectionResponse {
+    tags: string[];
+    films: MotionPicturePreviewDto[];
+}
+
+export async function getDiscovery(): Promise<CuratedCollectionResponse> {
+    return apiFetch<CuratedCollectionResponse>("/motionPicture/discovery", {
+        next: { revalidate: 3600 },
+    } as RequestInit);
+}
+
 export async function searchMotionPictures(
     query: string
 ): Promise<MotionPicture[]> {

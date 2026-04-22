@@ -13,8 +13,12 @@ import {
 } from "../../lib/motion-picture-filters";
 
 export const metadata: Metadata = {
-    title: "Browse Horror Films | Darkly",
+    title: "Browse Horror Films",
     description: "Search and filter horror films by fear, gore, atmosphere scores, genre, tags, and more.",
+    openGraph: {
+        title: "Browse Horror Films",
+        description: "Search and filter horror films by fear, gore, atmosphere scores, genre, tags, and more.",
+    },
 };
 
 interface MotionPicturesPageProps {

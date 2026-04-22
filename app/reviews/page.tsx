@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Horror Reviews",
+    description: "Critical reviews, ratings, and commentary on horror films — from slasher classics to modern psychological dread.",
+};
+
 export default function ReviewsPage() {
     return (
         <main className="min-h-screen bg-zinc-950 px-6 py-24 text-zinc-100">

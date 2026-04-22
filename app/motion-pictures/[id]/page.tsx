@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { MotionPicture } from "../../../types/motion-picture";
 
 import { getMotionPictureById } from "../../../services/motion-pictures";
 import {
@@ -15,6 +16,39 @@ import ReviewsSection from "../../../components/ReviewsSection";
 import SimilarFilmsSection from "../../../components/SimilarFilmsSection";
 import ViewTracker from "../../../components/ViewTracker";
 
+function toIsoDuration(minutes: number): string {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h > 0 ? `PT${h}H${m}M` : `PT${m}M`;
+}
+
+function buildMovieSchema(film: MotionPicture): Record<string, unknown> {
+    const schema: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "Movie",
+        name: film.originalTitle,
+        description: film.overview,
+        datePublished: film.releaseDate.toISOString().slice(0, 10),
+        ...(film.genres.length > 0 && { genre: film.genres }),
+        ...(film.posterUrl && { image: film.posterUrl }),
+        ...(film.runningTime && { duration: toIsoDuration(film.runningTime) }),
+        ...(film.language && { inLanguage: film.language }),
+        ...(film.tagline && { alternateName: film.tagline }),
+    };
+
+    if (film.scoreRatingCount > 0) {
+        schema.aggregateRating = {
+            "@type": "AggregateRating",
+            ratingValue: film.score.toFixed(1),
+            ratingCount: film.scoreRatingCount,
+            bestRating: 10,
+            worstRating: 0,
+        };
+    }
+
+    return schema;
+}
+
 interface MotionPictureDetailPageProps {
     params: Promise<{
         id: string;
@@ -27,36 +61,38 @@ export async function generateMetadata({
     try {
         const { id } = await params;
         const numericId = Number(id);
-        if (Number.isNaN(numericId)) return { title: "Not Found | Darkly" };
+        if (Number.isNaN(numericId)) return { title: "Not Found" };
 
         const motionPicture = await getMotionPictureById(numericId);
-        const title = `${motionPicture.originalTitle} | Darkly`;
+        const title = motionPicture.originalTitle;
         const description =
             motionPicture.hook ||
             motionPicture.tagline ||
             motionPicture.overview.slice(0, 160);
 
+        const images = motionPicture.backdropUrl
+            ? [{ url: motionPicture.backdropUrl, width: 1200, height: 630, alt: motionPicture.originalTitle }]
+            : undefined;
+
         return {
             title,
             description,
             openGraph: {
+                type: "video.movie",
                 title,
                 description,
-                ...(motionPicture.backdropUrl ? {
-                    images: [
-                        {
-                            url: motionPicture.backdropUrl,
-                            width: 1200,
-                            height: 630,
-                            alt: motionPicture.originalTitle,
-                        },
-                    ],
-                } : {}),
+                ...(images ? { images } : {}),
+            },
+            twitter: {
+                card: "summary_large_image",
+                title,
+                description,
+                ...(images ? { images: [images[0].url] } : {}),
             },
         };
     } catch {
         return {
-            title: "Motion Picture Not Found | Darkly",
+            title: "Motion Picture Not Found",
             description: "The requested motion picture could not be found.",
         };
     }
@@ -89,6 +125,10 @@ export default async function MotionPictureDetailPage({
 
     return (
         <main className="min-h-screen bg-zinc-950 text-zinc-100">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(buildMovieSchema(motionPicture)) }}
+            />
             <ViewTracker motionPictureId={motionPicture.id} />
             <section className="relative isolate overflow-hidden border-b border-zinc-800">
                 <div className="absolute inset-0">

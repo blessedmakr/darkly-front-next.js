@@ -5,7 +5,10 @@ import AdminPanel from "../../components/AdminPanel";
 
 const API_BASE = process.env.MOTION_PICTURES_API_BASE_URL;
 
-export const metadata: Metadata = { title: "Admin | Darkly" };
+export const metadata: Metadata = {
+    title: "Admin",
+    robots: { index: false, follow: false },
+};
 
 export default async function AdminPage() {
     const { userId, getToken } = await auth();

@@ -9,7 +9,8 @@ import type { MotionPicturePreviewDto } from "../../types/motion-picture";
 const RATING_THRESHOLD = 5;
 
 export const metadata: Metadata = {
-    title: "Recommended for You | Darkly",
+    title: "Recommended for You",
+    robots: { index: false, follow: false },
 };
 
 interface RecommendationsPageProps {

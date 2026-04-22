@@ -1,6 +1,6 @@
 import FeaturedHero from "@/components/FeaturedHero";
 import WhyDarkly from "@/components/WhyDarkly";
-import RecentlyAdded from "@/components/RecentlyAdded";
+import NewestFilms from "@/components/NewestFilms";
 import { getFeaturedMotionPicture } from "@/services/motion-pictures";
 
 export default async function HomePage() {
@@ -9,7 +9,7 @@ export default async function HomePage() {
   return (
     <main className="bg-zinc-950 text-zinc-100">
       <FeaturedHero motionPicture={featuredMotionPicture} />
-      <RecentlyAdded />
+      <NewestFilms />
       <WhyDarkly />
     </main>
   );

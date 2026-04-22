@@ -8,10 +8,33 @@ import ToastProvider from "../components/ToastProvider";
 import WatchlistProvider from "../components/WatchlistProvider";
 import RoleProvider from "../components/RoleProvider";
 
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "Darkly",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Darkly",
+    template: "%s | Darkly",
+  },
   description:
     "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
+  openGraph: {
+    type: "website",
+    siteName: "Darkly",
+    title: "Darkly",
+    description:
+      "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Darkly",
+    description:
+      "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
+  },
 };
 
 export default function RootLayout({
