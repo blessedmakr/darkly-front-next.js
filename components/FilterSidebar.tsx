@@ -149,6 +149,8 @@ export default function FilterSidebar({
         () => deriveOpenSections(currentFilters)
     );
     const isFirstRender = useRef(true);
+    const searchParamsRef = useRef(searchParams);
+    useEffect(() => { searchParamsRef.current = searchParams; }, [searchParams]);
     const yearRangeInverted = fromYear !== null && toYear !== null && fromYear > toYear;
 
     const appliedFilterFingerprint = useMemo(
@@ -180,10 +182,10 @@ export default function FilterSidebar({
         }
         if (Object.keys(scoreErrors).length > 0 || yearRangeInverted) return;
 
-        const sortBy = searchParams.get("sortBy");
-        const sortDir = searchParams.get("sortDir");
-        const query = searchParams.get("query");
-        const prevSearch = searchParams.toString();
+        const sortBy = searchParamsRef.current.get("sortBy");
+        const sortDir = searchParamsRef.current.get("sortDir");
+        const query = searchParamsRef.current.get("query");
+        const prevSearch = searchParamsRef.current.toString();
 
         const timer = setTimeout(() => {
             const params = new URLSearchParams();
@@ -209,7 +211,7 @@ export default function FilterSidebar({
 
         return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [includeGenres, excludeGenres, includeTags, excludeTags, tagModes, fromYear, toYear, scores, scoreErrors, yearRangeInverted, searchParams]);
+    }, [includeGenres, excludeGenres, includeTags, excludeTags, tagModes, fromYear, toYear, scores, scoreErrors, yearRangeInverted]);
 
     const sortedTagGroups = useMemo(() => {
         const groups = availableTags.reduce<Map<string, TagDto[]>>((acc, tag) => {
