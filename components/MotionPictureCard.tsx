@@ -66,32 +66,33 @@ export default function MotionPictureCard({
                         )}
                     </div>
 
-                    <div className="flex items-start gap-2 px-4 pt-4">
-                        <div className="min-w-0 flex-1">
-                            {primaryTag && (
-                                <p className="text-[11px] uppercase tracking-[0.2em] text-red-500">
-                                    {primaryTag}
-                                </p>
-                            )}
-
-                            <h2 className="mt-2 text-lg font-semibold leading-tight tracking-tight text-zinc-100 group-hover:text-red-400">
-                                {motionPicture.originalTitle}
-                            </h2>
-
-                            <p className="mt-2 text-xs text-zinc-500">
-                                {releaseYear} · {displayRating} ·{" "}
-                                {formatRunningTime(motionPicture.runningTime)}
+                    <div className="px-4 pt-4">
+                        {primaryTag && (
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-red-500">
+                                {primaryTag}
                             </p>
-                        </div>
-
-                        {motionPicture.scoreRatingCount > 0 && (
-                            <div className="shrink-0 text-right">
-                                <p className="text-xl font-bold tabular-nums leading-none text-lime-400">
-                                    {motionPicture.score.toFixed(1)}
-                                </p>
-                                <p className="mt-0.5 text-[10px] text-zinc-600">/ 10</p>
-                            </div>
                         )}
+                        <div className="mt-2 flex items-start gap-2">
+                            <div className="min-w-0 flex-1">
+                                <h2 className="text-lg font-semibold leading-tight tracking-tight text-zinc-100 group-hover:text-red-400">
+                                    {motionPicture.originalTitle}
+                                </h2>
+
+                                <p className="mt-2 text-xs text-zinc-500">
+                                    {releaseYear} · {displayRating} ·{" "}
+                                    {formatRunningTime(motionPicture.runningTime)}
+                                </p>
+                            </div>
+
+                            {motionPicture.scoreRatingCount > 0 && (
+                                <div className="shrink-0 text-right">
+                                    <p className="text-xl font-bold tabular-nums leading-none text-lime-400">
+                                        {motionPicture.score.toFixed(1)}
+                                    </p>
+                                    <p className="mt-0.5 text-[10px] text-zinc-600">/ 10</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Link>
 
