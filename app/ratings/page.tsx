@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import ScoreGrid from "../../components/ScoreGrid";
+import { SERVER_API_BASE } from "../../lib/config";
 
 export const metadata: Metadata = {
     title: "My Ratings",
@@ -32,7 +33,7 @@ export default async function MyRatingsPage() {
 
     const token = await getToken();
     const res = await fetch(
-        `${process.env.MOTION_PICTURES_API_BASE_URL}/ratings/mine`,
+        `${SERVER_API_BASE}/ratings/mine`,
         {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",

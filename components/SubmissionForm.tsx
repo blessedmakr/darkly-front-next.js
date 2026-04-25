@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { PUBLIC_API_BASE } from "../lib/config";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -54,7 +55,7 @@ export default function SubmissionForm() {
         try {
             const token = await getToken();
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/submissions`,
+                `${PUBLIC_API_BASE}/submissions`,
                 {
                     method: "POST",
                     headers: {

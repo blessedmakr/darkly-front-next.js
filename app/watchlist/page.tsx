@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import WatchlistList from "../../components/WatchlistList";
+import { SERVER_API_BASE } from "../../lib/config";
 
 export const metadata: Metadata = {
     title: "My Watchlist",
@@ -27,11 +28,11 @@ export default async function MyWatchlistPage() {
     const token = await getToken();
 
     const [watchlistRes, ratingsRes] = await Promise.all([
-        fetch(`${process.env.MOTION_PICTURES_API_BASE_URL}/watchlist/mine`, {
+        fetch(`${SERVER_API_BASE}/watchlist/mine`, {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",
         }),
-        fetch(`${process.env.MOTION_PICTURES_API_BASE_URL}/ratings/mine`, {
+        fetch(`${SERVER_API_BASE}/ratings/mine`, {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",
         }),

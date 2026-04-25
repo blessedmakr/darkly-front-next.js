@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, SignInButton, Show } from "@clerk/nextjs";
 import { useRole } from "./RoleProvider";
+import { PUBLIC_API_BASE } from "../lib/config";
 
 const DIMENSIONS = [
     { key: "overallScore",    label: "Overall"    },
@@ -101,7 +102,7 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
         getToken().then((token) => {
             if (!token) { setLoadingExisting(false); return; }
             return fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/ratings/motion-pictures/${motionPictureId}/mine`,
+                `${PUBLIC_API_BASE}/ratings/motion-pictures/${motionPictureId}/mine`,
                 { headers: { Authorization: `Bearer ${token}` } }
             ).then((res) => {
                 if (!res.ok) return;
@@ -134,7 +135,7 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
 
         try {
             const token = await getToken();
-            const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/ratings/motion-pictures/${motionPictureId}`;
+            const url = `${PUBLIC_API_BASE}/ratings/motion-pictures/${motionPictureId}`;
 
             let res: Response;
             if (isUpdate) {

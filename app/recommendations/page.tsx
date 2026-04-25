@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getRecommendations, getSimilarFilms } from "../../services/motion-pictures";
 import MotionPicturePreviewCard from "../../components/MotionPicturePreviewCard";
 import type { MotionPicturePreviewDto } from "../../types/motion-picture";
+import { SERVER_API_BASE } from "../../lib/config";
 
 const RATING_THRESHOLD = 5;
 
@@ -35,7 +36,7 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
             : null;
 
     const ratingsRes = await fetch(
-        `${process.env.MOTION_PICTURES_API_BASE_URL}/ratings/mine`,
+        `${SERVER_API_BASE}/ratings/mine`,
         { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
     );
     const ratings: unknown[] = ratingsRes.ok ? await ratingsRes.json() : [];

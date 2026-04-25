@@ -2,8 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+import { PUBLIC_API_BASE as API } from "../lib/config";
 
 interface WatchlistContextValue {
     isLoaded: boolean;

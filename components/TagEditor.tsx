@@ -4,6 +4,8 @@ import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import type { TagDto } from "../types/motion-picture";
 import { useRole } from "./RoleProvider";
+import { PUBLIC_API_BASE } from "../lib/config";
+import RemovablePill from "./RemovablePill";
 
 interface TagEditorProps {
     motionPictureId: number;
@@ -18,7 +20,7 @@ export default function TagEditor({ motionPictureId, initialTags }: TagEditorPro
     const [selectedTagId, setSelectedTagId] = useState<string>("");
     const [busy, setBusy] = useState(false);
 
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const base = PUBLIC_API_BASE;
 
     useEffect(() => {
         if (!isCurator) return;
@@ -76,20 +78,13 @@ export default function TagEditor({ motionPictureId, initialTags }: TagEditorPro
             {currentTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                     {currentTags.map((tag) => (
-                        <span
+                        <RemovablePill
                             key={tag.id}
-                            className="inline-flex items-center gap-1 rounded-full border border-lime-400/20 bg-zinc-900 px-3 py-1 text-sm text-zinc-200"
-                        >
-                            {tag.name}
-                            <button
-                                onClick={() => handleRemove(tag.id)}
-                                disabled={busy}
-                                className="ml-1 text-zinc-500 hover:text-red-400 transition-colors"
-                                aria-label={`Remove tag ${tag.name}`}
-                            >
-                                ×
-                            </button>
-                        </span>
+                            label={tag.name}
+                            onRemove={() => handleRemove(tag.id)}
+                            disabled={busy}
+                            variant="lime"
+                        />
                     ))}
                 </div>
             )}

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import AdminPanel from "../../components/AdminPanel";
-
-const API_BASE = process.env.MOTION_PICTURES_API_BASE_URL;
+import { SERVER_API_BASE as API_BASE } from "../../lib/config";
 
 export const metadata: Metadata = {
     title: "Admin",
