@@ -2,12 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import type { MotionPicturePreviewDto } from "../types/motion-picture";
 import WatchlistBookmark from "./WatchlistBookmark";
+import FavoriteHeartButton from "./FavoriteHeartButton";
 import ScoreGrid from "./ScoreGrid";
 
 export default function MotionPicturePreviewCard({ film }: { film: MotionPicturePreviewDto }) {
     return (
         <div className="relative w-full">
-            <div className="absolute right-2 top-2 z-10">
+            <div className="absolute right-2 top-2 z-10 flex gap-1">
+                <FavoriteHeartButton motionPictureId={film.id} />
                 <WatchlistBookmark motionPictureId={film.id} />
             </div>
 
