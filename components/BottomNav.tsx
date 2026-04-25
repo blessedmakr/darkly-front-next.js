@@ -7,18 +7,6 @@ import { SignInButton, UserButton } from "@clerk/nextjs";
 
 const TABS = [
     {
-        href: "/",
-        label: "Home",
-        exact: true,
-        icon: (active: boolean) => (
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12L12 3l9 9" />
-                <path d="M9 21V12h6v9" />
-                <path d="M5 10v11h14V10" />
-            </svg>
-        ),
-    },
-    {
         href: "/motion-pictures",
         label: "Browse",
         exact: false,
@@ -40,6 +28,16 @@ const TABS = [
         ),
     },
     {
+        href: "/favorites",
+        label: "Favorites",
+        exact: false,
+        icon: (active: boolean) => (
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 21C12 21 3 14 3 8a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 13-9 13z" />
+            </svg>
+        ),
+    },
+    {
         href: "/ratings",
         label: "Ratings",
         exact: false,
@@ -55,7 +53,7 @@ const TABS = [
         exact: false,
         icon: (active: boolean) => (
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 21C12 21 3 14 3 8a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-9 13-9 13z" />
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
         ),
     },

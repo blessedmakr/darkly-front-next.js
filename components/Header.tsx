@@ -38,11 +38,6 @@ export default function Header({ overlay = false }: HeaderProps) {
                             ].join(" ")}
                         >
                             <li>
-                                <Link href="/" className="transition hover:text-white">
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
                                 <Link
                                     href="/motion-pictures"
                                     className="transition hover:text-white"
@@ -94,6 +89,9 @@ export default function Header({ overlay = false }: HeaderProps) {
                             </Link>
                             <Link href="/watchlist" className="text-zinc-400 transition hover:text-zinc-100">
                                 Watchlist
+                            </Link>
+                            <Link href="/favorites" className="text-zinc-400 transition hover:text-zinc-100">
+                                Favorites
                             </Link>
                             <Link href="/ratings" className="text-zinc-400 transition hover:text-zinc-100">
                                 My Ratings
