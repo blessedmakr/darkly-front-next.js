@@ -10,6 +10,7 @@ import {
     getPrimaryTag,
     getReleaseYear,
 } from "../../../lib/motion-picture";
+import { SITE_URL } from "../../../lib/config";
 import RatingForm from "../../../components/RatingForm";
 import WatchlistBookmark from "../../../components/WatchlistBookmark";
 import FavoriteHeartButton from "../../../components/FavoriteHeartButton";
@@ -21,6 +22,18 @@ function toIsoDuration(minutes: number): string {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return h > 0 ? `PT${h}H${m}M` : `PT${m}M`;
+}
+
+function buildBreadcrumbSchema(film: MotionPicture): Record<string, unknown> {
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+            { "@type": "ListItem", position: 2, name: "Browse", item: `${SITE_URL}/motion-pictures` },
+            { "@type": "ListItem", position: 3, name: film.originalTitle, item: `${SITE_URL}/motion-pictures/${film.id}` },
+        ],
+    };
 }
 
 function buildMovieSchema(film: MotionPicture): Record<string, unknown> {
@@ -129,6 +142,10 @@ export default async function MotionPictureDetailPage({
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(buildMovieSchema(motionPicture)) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(buildBreadcrumbSchema(motionPicture)) }}
             />
             <ViewTracker motionPictureId={motionPicture.id} />
             <section className="relative isolate overflow-hidden border-b border-zinc-800">

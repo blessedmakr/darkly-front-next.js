@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Horror Reviews",
     description: "Critical reviews, ratings, and commentary on horror films — from slasher classics to modern psychological dread.",
+    robots: { index: false, follow: false },
 };
 
 export default function ReviewsPage() {

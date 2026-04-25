@@ -8,15 +8,10 @@ import ToastProvider from "../components/ToastProvider";
 import WatchlistProvider from "../components/WatchlistProvider";
 import FavoritesProvider from "../components/FavoritesProvider";
 import RoleProvider from "../components/RoleProvider";
-
-const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+import { SITE_URL } from "../lib/config";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Darkly",
     template: "%s | Darkly",
