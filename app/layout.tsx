@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
 import ToastProvider from "../components/ToastProvider";
 import WatchlistProvider from "../components/WatchlistProvider";
+import FavoritesProvider from "../components/FavoritesProvider";
 import RoleProvider from "../components/RoleProvider";
 
 const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -49,10 +50,12 @@ export default function RootLayout({
           <ToastProvider>
             <RoleProvider>
             <WatchlistProvider>
+            <FavoritesProvider>
               <Header overlay />
               <div className="relative pb-16 md:pb-0">{children}</div>
               <Footer />
               <BottomNav />
+            </FavoritesProvider>
             </WatchlistProvider>
             </RoleProvider>
           </ToastProvider>

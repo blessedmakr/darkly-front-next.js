@@ -12,6 +12,7 @@ import {
 } from "../../../lib/motion-picture";
 import RatingForm from "../../../components/RatingForm";
 import WatchlistBookmark from "../../../components/WatchlistBookmark";
+import FavoriteHeartButton from "../../../components/FavoriteHeartButton";
 import ReviewsSection from "../../../components/ReviewsSection";
 import SimilarFilmsSection from "../../../components/SimilarFilmsSection";
 import ViewTracker from "../../../components/ViewTracker";
@@ -208,9 +209,10 @@ export default async function MotionPictureDetailPage({
                                 ))}
                             </div>
 
-                            <div className="mt-6">
-                            <WatchlistBookmark motionPictureId={motionPicture.id} />
-                        </div>
+                            <div className="mt-6 flex gap-2">
+                                <WatchlistBookmark motionPictureId={motionPicture.id} />
+                                <FavoriteHeartButton motionPictureId={motionPicture.id} />
+                            </div>
 
                         {motionPicture.tags.length > 0 ? (
                                 <>
