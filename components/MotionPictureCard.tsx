@@ -8,6 +8,7 @@ import {
 } from "../lib/motion-picture";
 import TagsPopover from "./TagsPopover";
 import WatchlistBookmark from "./WatchlistBookmark";
+import FavoriteHeartButton from "./FavoriteHeartButton";
 
 interface MotionPictureCardProps {
     motionPicture: MotionPicture;
@@ -33,7 +34,8 @@ export default function MotionPictureCard({
     return (
         <div className="relative w-full">
             {/* Bookmark sits outside the <Link> to avoid invalid <a><button> nesting */}
-            <div className="absolute right-2 top-2 z-10">
+            <div className="absolute right-2 top-2 z-10 flex gap-1">
+                <FavoriteHeartButton motionPictureId={motionPicture.id} />
                 <WatchlistBookmark motionPictureId={motionPicture.id} />
             </div>
 
