@@ -83,20 +83,25 @@ export default async function MotionPicturesPage({
                     </aside>
 
                     <div className="min-w-0 flex-1">
-                        {/* Mobile filter + sort row */}
-                        <div className="mb-6 flex items-center justify-between lg:hidden">
-                            <MobileFilterDrawer
-                                availableGenres={genres}
-                                availableTags={tags}
-                                currentFilters={filters}
-                                activeFilterCount={activeFilterCount}
-                            />
-                            <Suspense fallback={null}>
-                                <SortControl
-                                    currentSortBy={filters.sortBy}
-                                    currentSortDir={filters.sortDir}
+                        <div className="mb-6 flex items-center justify-between">
+                            <div className="lg:hidden">
+                                <MobileFilterDrawer
+                                    availableGenres={genres}
+                                    availableTags={tags}
+                                    currentFilters={filters}
+                                    activeFilterCount={activeFilterCount}
                                 />
-                            </Suspense>
+                            </div>
+                            {result !== null && result.items.length > 0 && (
+                                <Suspense fallback={null}>
+                                    <div className="ml-auto">
+                                        <SortControl
+                                            currentSortBy={filters.sortBy}
+                                            currentSortDir={filters.sortDir}
+                                        />
+                                    </div>
+                                </Suspense>
+                            )}
                         </div>
 
                         {result === null ? (
@@ -105,14 +110,6 @@ export default async function MotionPicturesPage({
                             </div>
                         ) : result.items.length > 0 ? (
                             <>
-                                <div className="mb-6 flex items-center justify-end">
-                                    <Suspense fallback={null}>
-                                        <SortControl
-                                            currentSortBy={filters.sortBy}
-                                            currentSortDir={filters.sortDir}
-                                        />
-                                    </Suspense>
-                                </div>
                                 <MotionPictureGrid motionPictures={result.items} />
                                 {result.total > result.pageSize && (
                                     <Suspense fallback={null}>
