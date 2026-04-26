@@ -37,19 +37,6 @@ function PositionBadge({ n }: { n: number }) {
     );
 }
 
-function GripIcon() {
-    return (
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75}>
-            <circle cx="9"  cy="6"  r="1" fill="currentColor" stroke="none" />
-            <circle cx="15" cy="6"  r="1" fill="currentColor" stroke="none" />
-            <circle cx="9"  cy="12" r="1" fill="currentColor" stroke="none" />
-            <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
-            <circle cx="9"  cy="18" r="1" fill="currentColor" stroke="none" />
-            <circle cx="15" cy="18" r="1" fill="currentColor" stroke="none" />
-        </svg>
-    );
-}
-
 // ─── Desktop poster card (recommendations style) ──────────────────────────────
 
 interface DesktopCardProps {
@@ -114,7 +101,10 @@ interface MobileCardProps {
 
 function MobileCard({ item, showPosition, isDragMode, dragListeners, onConfirmRemove }: MobileCardProps) {
     return (
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-zinc-700">
+        <div
+            {...(isDragMode ? dragListeners : {})}
+            className={`flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-zinc-700${isDragMode ? " touch-none cursor-grab active:cursor-grabbing" : ""}`}
+        >
             {showPosition && (
                 <span className="w-5 shrink-0 text-center text-xs font-bold tabular-nums text-zinc-600">
                     {item.position}
@@ -135,24 +125,13 @@ function MobileCard({ item, showPosition, isDragMode, dragListeners, onConfirmRe
                     <p className="mt-0.5 text-xs text-zinc-500">{item.releaseYear}</p>
                 )}
             </Link>
-            <div className="flex shrink-0 items-center gap-3">
-                <button
-                    onClick={onConfirmRemove}
-                    className="text-xs text-zinc-600 transition-colors hover:text-red-400"
-                    aria-label={`Remove ${item.originalTitle}`}
-                >
-                    Remove
-                </button>
-                {isDragMode && (
-                    <div
-                        {...dragListeners}
-                        className="cursor-grab touch-none text-zinc-600 active:cursor-grabbing"
-                        aria-label="Drag to reorder"
-                    >
-                        <GripIcon />
-                    </div>
-                )}
-            </div>
+            <button
+                onClick={onConfirmRemove}
+                className="shrink-0 text-xs text-zinc-600 transition-colors hover:text-red-400"
+                aria-label={`Remove ${item.originalTitle}`}
+            >
+                Remove
+            </button>
         </div>
     );
 }
@@ -366,7 +345,7 @@ export default function FavoritesList({ initialItems }: { initialItems: Favorite
                         {isDragMode && (
                             <p className="text-xs text-zinc-500">
                                 <span className="hidden md:inline">Drag to reorder</span>
-                                <span className="md:hidden">Hold grip to reorder</span>
+                                <span className="md:hidden">Hold to reorder</span>
                             </p>
                         )}
                     </div>
