@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { MotionPicture } from "../../../types/motion-picture";
 
-import { getMotionPictureById, getAllMotionPictureIds } from "../../../services/motion-pictures";
+import { getMotionPictureById } from "../../../services/motion-pictures";
 import {
     formatRunningTime,
     getPrimaryTag,
@@ -63,16 +63,8 @@ function buildMovieSchema(film: MotionPicture): Record<string, unknown> {
     return schema;
 }
 
+export const dynamic = "force-static";
 export const revalidate = 3600;
-
-export async function generateStaticParams() {
-    try {
-        const films = await getAllMotionPictureIds();
-        return films.map(({ id }) => ({ id: String(id) }));
-    } catch {
-        return [];
-    }
-}
 
 interface MotionPictureDetailPageProps {
     params: Promise<{
