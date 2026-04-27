@@ -6,6 +6,7 @@ import type { MotionPicture, MotionPicturePreviewDto } from "../types/motion-pic
 import type { MotionPictureDto } from "../types/motion-picture-dto";
 import {
     mapFiltersToMotionPictureSearchRequest,
+    EMPTY_FILTER_STATE,
     type MotionPictureFilterState,
 } from "../lib/motion-picture-filters";
 
@@ -117,6 +118,42 @@ export async function getDiscovery(): Promise<CuratedCollectionResponse> {
     return apiFetch<CuratedCollectionResponse>("/motionPicture/discovery", {
         next: { revalidate: 3600 },
     } as RequestInit);
+}
+
+const ALL_FILMS_PAGE_SIZE = 500;
+
+export async function getAllMotionPictureIds(): Promise<{ id: number; releaseDate: Date }[]> {
+    const results: { id: number; releaseDate: Date }[] = [];
+
+    const first = await searchMotionPicturesWithFilters(EMPTY_FILTER_STATE, {
+        page: 1,
+        pageSize: ALL_FILMS_PAGE_SIZE,
+    });
+
+    for (const item of first.items) {
+        results.push({ id: item.id, releaseDate: item.releaseDate });
+    }
+
+    const totalPages = Math.ceil(first.total / ALL_FILMS_PAGE_SIZE);
+
+    if (totalPages > 1) {
+        const rest = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) =>
+                searchMotionPicturesWithFilters(EMPTY_FILTER_STATE, {
+                    page: i + 2,
+                    pageSize: ALL_FILMS_PAGE_SIZE,
+                })
+            )
+        );
+
+        for (const page of rest) {
+            for (const item of page.items) {
+                results.push({ id: item.id, releaseDate: item.releaseDate });
+            }
+        }
+    }
+
+    return results;
 }
 
 export async function searchMotionPictures(

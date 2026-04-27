@@ -7,6 +7,15 @@ import { SignInButton } from "@clerk/nextjs";
 export const metadata: Metadata = {
     title: "Submit a Film",
     description: "Don't see your favourite horror film? Submit it for review.",
+    openGraph: {
+        title: "Submit a Film",
+        description: "Don't see your favourite horror film? Submit it for review.",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Submit a Film",
+        description: "Don't see your favourite horror film? Submit it for review.",
+    },
 };
 
 export default async function SubmitPage() {

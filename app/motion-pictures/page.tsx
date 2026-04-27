@@ -19,6 +19,11 @@ export const metadata: Metadata = {
         title: "Browse Horror Films",
         description: "Search and filter horror films by fear, gore, atmosphere scores, genre, tags, and more.",
     },
+    twitter: {
+        card: "summary_large_image",
+        title: "Browse Horror Films",
+        description: "Search and filter horror films by fear, gore, atmosphere scores, genre, tags, and more.",
+    },
 };
 
 interface MotionPicturesPageProps {
