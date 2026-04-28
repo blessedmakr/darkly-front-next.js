@@ -82,17 +82,15 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const init = deriveInitialState(currentFilters);
-
-    const [includeGenres, setIncludeGenres] = useState<string[]>(init.includeGenres);
-    const [excludeGenres, setExcludeGenres] = useState<string[]>(init.excludeGenres);
-    const [includeTags, setIncludeTags]     = useState<PendingTag[]>(init.includeTags);
-    const [excludeTags, setExcludeTags]     = useState<PendingTag[]>(init.excludeTags);
-    const [tagModes, setTagModes]           = useState<Record<string, TagMatchMode>>(init.tagModes);
-    const [selectedDecade, setSelectedDecade] = useState<number | null>(init.selectedDecade);
-    const [fromYear, setFromYear]           = useState<number | null>(init.fromYear);
-    const [toYear, setToYear]               = useState<number | null>(init.toYear);
-    const [scores, setScores]               = useState<ScoreState>(init.scores);
+    const [includeGenres, setIncludeGenres] = useState<string[]>(() => deriveInitialState(currentFilters).includeGenres);
+    const [excludeGenres, setExcludeGenres] = useState<string[]>(() => deriveInitialState(currentFilters).excludeGenres);
+    const [includeTags, setIncludeTags]     = useState<PendingTag[]>(() => deriveInitialState(currentFilters).includeTags);
+    const [excludeTags, setExcludeTags]     = useState<PendingTag[]>(() => deriveInitialState(currentFilters).excludeTags);
+    const [tagModes, setTagModes]           = useState<Record<string, TagMatchMode>>(() => deriveInitialState(currentFilters).tagModes);
+    const [selectedDecade, setSelectedDecade] = useState<number | null>(() => deriveInitialState(currentFilters).selectedDecade);
+    const [fromYear, setFromYear]           = useState<number | null>(() => deriveInitialState(currentFilters).fromYear);
+    const [toYear, setToYear]               = useState<number | null>(() => deriveInitialState(currentFilters).toYear);
+    const [scores, setScores]               = useState<ScoreState>(() => deriveInitialState(currentFilters).scores);
     const [scoreErrors, setScoreErrors]     = useState<ScoreErrors>({});
     const [openSections, setOpenSections]   = useState<Set<string>>(
         () => deriveOpenSections(currentFilters)
@@ -109,6 +107,31 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
         [currentFilters]
     );
 
+    // O(1) mode lookups for pill rendering (was O(n) per pill via .includes/.some).
+    // Insertion order matters: include is set last so it wins on key collision,
+    // matching the original include-first lookup precedence.
+    const genreModeMap = useMemo(() => {
+        const m = new Map<string, Exclude<FilterMode, null>>();
+        excludeGenres.forEach((g) => m.set(g, "exclude"));
+        includeGenres.forEach((g) => m.set(g, "include"));
+        return m;
+    }, [includeGenres, excludeGenres]);
+
+    const tagModeMap = useMemo(() => {
+        const m = new Map<string, Exclude<FilterMode, null>>();
+        excludeTags.forEach((t) => m.set(`${t.tagType}:${t.name}`, "exclude"));
+        includeTags.forEach((t) => m.set(`${t.tagType}:${t.name}`, "include"));
+        return m;
+    }, [includeTags, excludeTags]);
+
+    // Single-pass count by tag type (was .filter().length per section, per render).
+    const tagCountsByType = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const t of includeTags) counts.set(t.tagType, (counts.get(t.tagType) ?? 0) + 1);
+        for (const t of excludeTags) counts.set(t.tagType, (counts.get(t.tagType) ?? 0) + 1);
+        return counts;
+    }, [includeTags, excludeTags]);
+
     // Sync local state when external filter changes arrive (e.g. URL cleared).
     useEffect(() => {
         const next = deriveInitialState(currentFilters);
@@ -122,7 +145,13 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
         setToYear(next.toYear);
         setScores(next.scores);
         setScoreErrors({});
-        setOpenSections(deriveOpenSections(currentFilters));
+        // Merge so sections the user manually opened (with no selections yet) survive
+        // URL changes from the live-update round-trip. Sections with new selections still open.
+        setOpenSections((prev) => {
+            const merged = new Set(prev);
+            deriveOpenSections(currentFilters).forEach((s) => merged.add(s));
+            return merged;
+        });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appliedFilterFingerprint]);
 
@@ -169,9 +198,7 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
     // ── Genre handlers ─────────────────────────────────────────────────────────
 
     function getGenreMode(genre: string): FilterMode {
-        if (includeGenres.includes(genre)) return "include";
-        if (excludeGenres.includes(genre)) return "exclude";
-        return null;
+        return genreModeMap.get(genre) ?? null;
     }
 
     function toggleGenre(genre: string) {
@@ -189,9 +216,7 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
     // ── Tag handlers ───────────────────────────────────────────────────────────
 
     function getTagMode(tagType: string, tagName: string): FilterMode {
-        if (includeTags.some((t) => t.tagType === tagType && t.name === tagName)) return "include";
-        if (excludeTags.some((t) => t.tagType === tagType && t.name === tagName)) return "exclude";
-        return null;
+        return tagModeMap.get(`${tagType}:${tagName}`) ?? null;
     }
 
     function toggleTag(tagType: string, tagName: string) {
@@ -269,6 +294,9 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
     // ── Clear ──────────────────────────────────────────────────────────────────
 
     function clearFilters() {
+        // Explicit reset: the sync effect only ever opens sections (never closes),
+        // so Clear must collapse them itself.
+        setOpenSections(new Set());
         router.push(pathname);
     }
 
@@ -302,6 +330,7 @@ export function useFilters(currentFilters: MotionPictureFilterState) {
         includeGenres, excludeGenres, includeTags, excludeTags, tagModes,
         selectedDecade, fromYear, toYear, scores, scoreErrors, openSections,
         yearRangeInverted, hasPendingFilters, hasAppliedFilters,
+        tagCountsByType,
         toggleGenre, getGenreMode, toggleTag, getTagMode,
         toggleDecade, setFrom, setTo,
         getSectionMatchMode, toggleSectionMatchMode,

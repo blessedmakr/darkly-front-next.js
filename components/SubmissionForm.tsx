@@ -95,7 +95,7 @@ export default function SubmissionForm() {
             <div className="rounded-xl border border-lime-400/20 bg-lime-400/5 p-6">
                 <p className="font-medium text-lime-400">Submission received — thank you.</p>
                 <p className="mt-1 text-sm text-zinc-400">
-                    We'll review it and add it to the catalog if it fits.
+                    We&apos;ll review it and add it to the catalog if it fits.
                 </p>
                 <button
                     onClick={reset}

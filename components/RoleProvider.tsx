@@ -29,7 +29,6 @@ export default function RoleProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         if (!isSignedIn || !userId) {
-            setRole(null);
             fetchedForRef.current = null;
             return;
         }
@@ -48,11 +47,12 @@ export default function RoleProvider({ children }: { children: React.ReactNode }
             .catch(() => setRole("member"));
     }, [isSignedIn, userId, getToken]);
 
-    const isAdmin = role === "admin";
-    const isCurator = role === "trusted_curator" || role === "admin";
+    const effectiveRole: Role = isSignedIn && userId ? role : null;
+    const isAdmin = effectiveRole === "admin";
+    const isCurator = effectiveRole === "trusted_curator" || effectiveRole === "admin";
 
     return (
-        <RoleContext.Provider value={{ role, isAdmin, isCurator }}>
+        <RoleContext.Provider value={{ role: effectiveRole, isAdmin, isCurator }}>
             {children}
         </RoleContext.Provider>
     );

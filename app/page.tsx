@@ -39,7 +39,12 @@ const websiteSchema = {
 };
 
 export default async function HomePage() {
-    const featuredMotionPicture = await getFeaturedMotionPicture();
+    let featuredMotionPicture: Awaited<ReturnType<typeof getFeaturedMotionPicture>> | null = null;
+    try {
+        featuredMotionPicture = await getFeaturedMotionPicture();
+    } catch {
+        featuredMotionPicture = null;
+    }
 
     return (
         <main className="bg-zinc-950 text-zinc-100">
@@ -47,7 +52,7 @@ export default async function HomePage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
             />
-            <FeaturedHero motionPicture={featuredMotionPicture} />
+            {featuredMotionPicture && <FeaturedHero motionPicture={featuredMotionPicture} />}
             <Discovery />
             <WhyWatchDarkly />
         </main>

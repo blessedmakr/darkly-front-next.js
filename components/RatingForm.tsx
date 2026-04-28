@@ -230,7 +230,7 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
                             )}
                             {reviewText.trim() && (
                                 <p className="text-sm text-zinc-300 line-clamp-3 italic">
-                                    "{reviewText.trim()}"
+                                    &ldquo;{reviewText.trim()}&rdquo;
                                 </p>
                             )}
                         </div>

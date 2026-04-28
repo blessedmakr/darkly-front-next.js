@@ -410,7 +410,7 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
                     })}
 
                     {filteredMetaFilms.length === 0 && metaSearch.trim() !== "" && (
-                        <p className="text-sm text-zinc-500">No films match "{metaSearch}".</p>
+                        <p className="text-sm text-zinc-500">No films match &ldquo;{metaSearch}&rdquo;.</p>
                     )}
                 </div>
             )}

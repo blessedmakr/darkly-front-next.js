@@ -27,7 +27,7 @@ export default async function SubmitPage() {
                 <p className="text-sm uppercase tracking-[0.3em] text-red-500">Community</p>
                 <h1 className="mt-3 text-3xl font-semibold tracking-tight">Submit a film</h1>
                 <p className="mt-3 leading-7 text-zinc-400">
-                    Don't see a horror film that belongs here? Submit it and we'll review it
+                    Don&apos;t see a horror film that belongs here? Submit it and we&apos;ll review it
                     for inclusion in the catalog.
                 </p>
 

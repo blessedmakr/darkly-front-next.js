@@ -93,9 +93,10 @@ export default function FilterSidebar({
     const searchParams = useSearchParams();
 
     const {
-        includeGenres, excludeGenres, includeTags, excludeTags,
+        includeGenres, excludeGenres,
         selectedDecade, fromYear, toYear, scores, scoreErrors, openSections,
         yearRangeInverted, hasPendingFilters, hasAppliedFilters,
+        tagCountsByType,
         toggleGenre, getGenreMode, toggleTag, getTagMode,
         toggleDecade, setFrom, setTo,
         getSectionMatchMode, toggleSectionMatchMode,
@@ -232,9 +233,7 @@ export default function FilterSidebar({
 
                 {/* Tag sections in explicit order */}
                 {sortedTagGroups.map(([tagType, tags]) => {
-                    const activeCount =
-                        includeTags.filter((t) => t.tagType === tagType).length +
-                        excludeTags.filter((t) => t.tagType === tagType).length;
+                    const activeCount = tagCountsByType.get(tagType) ?? 0;
                     const isContentWarning = tagType === "content_warning";
 
                     return (
