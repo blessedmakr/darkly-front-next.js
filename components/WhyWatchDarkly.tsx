@@ -57,7 +57,7 @@ const features = [
     },
 ];
 
-export default function WhyDarkly() {
+export default function WhyWatchDarkly() {
     return (
         <section className="relative bg-zinc-950 py-28">
             {/* Subtle top divider glow */}
@@ -68,7 +68,7 @@ export default function WhyDarkly() {
                 {/* Section header */}
                 <div className="max-w-2xl">
                     <p className="text-[10px] uppercase tracking-[0.45em] text-red-500">
-                        Why Darkly
+                        Why watchdarkly
                     </p>
                     <div className="mt-4 h-px w-10 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
                     <h2 className="mt-6 text-3xl font-semibold leading-tight tracking-tight text-zinc-100 md:text-4xl">
@@ -76,7 +76,7 @@ export default function WhyDarkly() {
                     </h2>
                     <p className="mt-4 text-base leading-7 text-zinc-400">
                         Mainstream film databases rate horror alongside comedies and dramas — a 6.5 could mean anything.
-                        Darkly is built specifically for the genre, with scores and filters that actually mean something
+                        watchdarkly is built specifically for the genre, with scores and filters that actually mean something
                         to people who watch horror seriously.
                     </p>
                 </div>

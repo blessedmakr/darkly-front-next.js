@@ -30,7 +30,7 @@ export default function Header({ overlay = false }: HeaderProps) {
                             overlay ? "text-red-400" : "text-red-500",
                         ].join(" ")}
                     >
-                        Darkly
+                        watchdarkly
                     </Link>
 
                     <nav className="hidden md:block">

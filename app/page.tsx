@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
 import FeaturedHero from "@/components/FeaturedHero";
-import WhyDarkly from "@/components/WhyDarkly";
+import WhyWatchDarkly from "@/components/WhyWatchDarkly";
 import Discovery from "@/components/Discovery";
 import { getFeaturedMotionPicture } from "@/services/motion-pictures";
 import { SITE_URL } from "../lib/config";
 
 const DESCRIPTION =
-    "Darkly rates horror films by fear, gore, and atmosphere so you always know what you're in for. Discover slasher classics, psychological horror, supernatural dread, and cult favorites.";
+    "watchdarkly rates horror films by fear, gore, and atmosphere so you always know what you're in for. Discover slasher classics, psychological horror, supernatural dread, and cult favorites.";
 
 export const metadata: Metadata = {
     title: "Horror Film Ratings — Discover What Terrifies",
     description: DESCRIPTION,
     openGraph: {
-        title: "Darkly — Horror Film Ratings",
+        title: "watchdarkly — Horror Film Ratings",
         description: DESCRIPTION,
     },
     twitter: {
         card: "summary_large_image",
-        title: "Darkly — Horror Film Ratings",
+        title: "watchdarkly — Horror Film Ratings",
         description: DESCRIPTION,
     },
 };
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Darkly",
+    name: "watchdarkly",
     url: SITE_URL,
     description: DESCRIPTION,
     potentialAction: {
@@ -49,7 +49,7 @@ export default async function HomePage() {
             />
             <FeaturedHero motionPicture={featuredMotionPicture} />
             <Discovery />
-            <WhyDarkly />
+            <WhyWatchDarkly />
         </main>
     );
 }

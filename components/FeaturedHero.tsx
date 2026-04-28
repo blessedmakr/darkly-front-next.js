@@ -45,7 +45,7 @@ export default function FeaturedHero({ motionPicture }: FeaturedHeroProps) {
 
                     {/* Site identity */}
                     <p className="text-[10px] uppercase tracking-[0.45em] text-zinc-500">
-                        Darkly &nbsp;·&nbsp; The horror film companion
+                        watchdarkly &nbsp;·&nbsp; The horror film companion
                     </p>
 
                     {/* Red rule */}

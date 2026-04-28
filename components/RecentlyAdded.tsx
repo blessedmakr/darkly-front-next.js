@@ -23,7 +23,7 @@ export default async function RecentlyAdded() {
         <section className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
             <div className="mb-6 flex items-baseline justify-between">
                 <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-500">New to Darkly</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-500">New to watchdarkly</p>
                     <h2 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-100">Recently Added</h2>
                 </div>
                 <Link

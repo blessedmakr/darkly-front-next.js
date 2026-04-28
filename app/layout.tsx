@@ -13,21 +13,21 @@ import { SITE_URL } from "../lib/config";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Darkly",
-    template: "%s | Darkly",
+    default: "watchdarkly",
+    template: "%s | watchdarkly",
   },
   description:
     "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
   openGraph: {
     type: "website",
-    siteName: "Darkly",
-    title: "Darkly",
+    siteName: "watchdarkly",
+    title: "watchdarkly",
     description:
       "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Darkly",
+    title: "watchdarkly",
     description:
       "A modern horror movie database for discovering slasher classics, psychological horror, supernatural dread, and cult favorites.",
   },

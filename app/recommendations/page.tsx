@@ -80,7 +80,7 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
                             </p>
                             <p className="mt-2 max-w-sm text-sm text-zinc-500">
                                 {ratingCount === 0
-                                    ? `Rate ${RATING_THRESHOLD} films and Darkly will find what to watch next based on your taste.`
+                                    ? `Rate ${RATING_THRESHOLD} films and watchdarkly will find what to watch next based on your taste.`
                                     : `Rate ${RATING_THRESHOLD - ratingCount} more film${RATING_THRESHOLD - ratingCount === 1 ? "" : "s"} to unlock your recommendations.`}
                             </p>
                         </div>
