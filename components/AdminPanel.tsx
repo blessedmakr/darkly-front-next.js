@@ -6,6 +6,7 @@ import UsersTab from "./admin/UsersTab";
 import SubmissionsTab from "./admin/SubmissionsTab";
 import AnalyticsTab from "./admin/AnalyticsTab";
 import MetadataTab from "./admin/MetadataTab";
+import InviteTab from "./admin/InviteTab";
 import type { AdminUser, Submission } from "./admin/types";
 
 interface AdminPanelProps {
@@ -13,7 +14,7 @@ interface AdminPanelProps {
     initialSubmissions: Submission[];
 }
 
-type Tab = "users" | "submissions" | "analytics" | "scores" | "metadata";
+type Tab = "users" | "submissions" | "analytics" | "scores" | "metadata" | "invite";
 
 export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPanelProps) {
     const { getToken } = useAuth();
@@ -25,7 +26,7 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
     return (
         <div>
             <div className="mb-8 flex gap-1 border-b border-zinc-800">
-                {(["users", "submissions", "analytics", "scores", "metadata"] as const).map((t) => (
+                {(["users", "submissions", "analytics", "scores", "metadata", "invite"] as const).map((t) => (
                     <button
                         key={t}
                         onClick={() => setTab(t)}
@@ -57,6 +58,7 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
             )}
             {tab === "analytics" && <AnalyticsTab getToken={getToken} />}
             {tab === "metadata" && <MetadataTab getToken={getToken} />}
+            {tab === "invite" && <InviteTab getToken={getToken} />}
         </div>
     );
 }
