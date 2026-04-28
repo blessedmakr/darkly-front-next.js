@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth, SignInButton } from "@clerk/nextjs";
-import { useWatchlist } from "./WatchlistProvider";
+import { useWatchlist } from "./UserDataProvider";
 import { useToast } from "./ToastProvider";
 
 interface WatchlistBookmarkProps {

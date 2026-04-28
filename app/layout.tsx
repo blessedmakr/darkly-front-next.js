@@ -5,9 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
 import ToastProvider from "../components/ToastProvider";
-import WatchlistProvider from "../components/WatchlistProvider";
-import FavoritesProvider from "../components/FavoritesProvider";
-import RoleProvider from "../components/RoleProvider";
+import UserDataProvider from "../components/UserDataProvider";
 import { SITE_URL } from "../lib/config";
 
 export const metadata: Metadata = {
@@ -43,16 +41,12 @@ export default function RootLayout({
       <body className="min-h-screen bg-zinc-950 text-zinc-100">
         <ClerkProvider>
           <ToastProvider>
-            <RoleProvider>
-            <WatchlistProvider>
-            <FavoritesProvider>
+            <UserDataProvider>
               <Header overlay />
               <div className="relative pb-16 md:pb-0">{children}</div>
               <Footer />
               <BottomNav />
-            </FavoritesProvider>
-            </WatchlistProvider>
-            </RoleProvider>
+            </UserDataProvider>
           </ToastProvider>
         </ClerkProvider>
       </body>

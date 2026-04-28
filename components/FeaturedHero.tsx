@@ -137,17 +137,17 @@ export default function FeaturedHero({ motionPicture }: FeaturedHeroProps) {
                             {/* Hover glow ring */}
                             <div className="pointer-events-none absolute -inset-4 rounded-[1.5rem] border border-lime-300/0 bg-lime-300/0 transition duration-300 group-hover:border-lime-300/50 group-hover:bg-lime-300/5" />
 
-                            <div className="relative w-[240px] overflow-hidden rounded-2xl border border-white/10 bg-black/80 shadow-[0_24px_80px_rgba(0,0,0,0.9)] transition duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_40px_120px_rgba(0,0,0,0.95)] lg:w-[280px]">
+                            <div className="relative aspect-[2/3] w-[240px] overflow-hidden rounded-2xl border border-white/10 bg-black/80 shadow-[0_24px_80px_rgba(0,0,0,0.9)] transition duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_40px_120px_rgba(0,0,0,0.95)] lg:w-[280px]">
                                 {/* Inner border glow on hover */}
                                 <div className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-lime-300/0 transition duration-300 group-hover:border-lime-300/40" />
 
                                 <Image
                                     src={motionPicture.posterUrl}
                                     alt={`${motionPicture.originalTitle} poster`}
-                                    width={560}
-                                    height={840}
+                                    fill
+                                    sizes="(min-width: 1024px) 280px, 240px"
                                     priority
-                                    className="h-auto w-full object-cover"
+                                    className="object-cover"
                                 />
                             </div>
                         </Link>

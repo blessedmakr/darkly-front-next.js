@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import CuratorBadge from "../CuratorBadge";
-import { PUBLIC_API_BASE } from "../../lib/config";
+import { useAuthedFetch } from "../../hooks/useAuthedFetch";
 import type { AdminUser } from "./types";
 
 interface UsersTabProps {
     initialUsers: AdminUser[];
-    getToken: () => Promise<string | null>;
 }
 
-export default function UsersTab({ initialUsers, getToken }: UsersTabProps) {
+export default function UsersTab({ initialUsers }: UsersTabProps) {
+    const authedFetch = useAuthedFetch();
     const [users, setUsers] = useState<AdminUser[]>(initialUsers);
     const [busy, setBusy] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
@@ -19,11 +19,7 @@ export default function UsersTab({ initialUsers, getToken }: UsersTabProps) {
         setBusy(userId);
         setActionError(null);
         try {
-            const token = await getToken();
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/users/${userId}/curator`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await authedFetch(`/admin/users/${userId}/curator`, { method: "POST" });
             if (!res.ok) { setActionError(`Failed to grant curator (${res.status})`); return; }
             setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: "trusted_curator" } : u)));
         } catch {
@@ -37,11 +33,7 @@ export default function UsersTab({ initialUsers, getToken }: UsersTabProps) {
         setBusy(userId);
         setActionError(null);
         try {
-            const token = await getToken();
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/users/${userId}/curator`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await authedFetch(`/admin/users/${userId}/curator`, { method: "DELETE" });
             if (!res.ok) { setActionError(`Failed to revoke curator (${res.status})`); return; }
             setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: "member" } : u)));
         } catch {

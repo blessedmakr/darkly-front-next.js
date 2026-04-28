@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRole } from "./RoleProvider";
+import { useRole } from "./UserDataProvider";
 
 export default function AdminLink() {
     const { isAdmin } = useRole();

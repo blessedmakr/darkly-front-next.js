@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { PUBLIC_API_BASE } from "../lib/config";
+import { useAuthedFetch } from "../hooks/useAuthedFetch";
+import Button from "./ui/Button";
+import { Input, Textarea, Select } from "./ui/Input";
+import { SectionLabel } from "./ui/SectionHeading";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -11,22 +13,19 @@ const RATINGS = ["G", "PG", "PG-13", "R", "NC-17", "NR", "Unrated"];
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
     return (
         <div>
-            <label className="mb-2 block text-xs uppercase tracking-[0.2em] text-zinc-500">
+            <SectionLabel className="mb-2 block">
                 {label}
                 {hint && (
                     <span className="ml-2 normal-case tracking-normal text-zinc-600">{hint}</span>
                 )}
-            </label>
+            </SectionLabel>
             {children}
         </div>
     );
 }
 
-const inputCls =
-    "w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none";
-
 export default function SubmissionForm() {
-    const { getToken } = useAuth();
+    const authedFetch = useAuthedFetch();
 
     const [title, setTitle]                           = useState("");
     const [alternativeTitle, setAlternativeTitle]     = useState("");
@@ -53,15 +52,10 @@ export default function SubmissionForm() {
         setError(null);
 
         try {
-            const token = await getToken();
-            const res = await fetch(
-                `${PUBLIC_API_BASE}/submissions`,
+            const res = await authedFetch(
+                `/submissions`,
                 {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
                     body: JSON.stringify({
                         title:                title.trim(),
                         alternativeTitle:     alternativeTitle.trim() || null,
@@ -110,132 +104,118 @@ export default function SubmissionForm() {
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             <Field label="Title" hint="*">
-                <input
+                <Input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
                     maxLength={300}
                     placeholder="e.g. Hereditary"
-                    className={inputCls}
                 />
             </Field>
 
             <Field label="Alternative Title" hint="(AKA, original language title, etc.)">
-                <input
+                <Input
                     type="text"
                     value={alternativeTitle}
                     onChange={(e) => setAlternativeTitle(e.target.value)}
                     maxLength={300}
                     placeholder="e.g. Hérédité"
-                    className={inputCls}
                 />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
                 <Field label="Release Year">
-                    <input
+                    <Input
                         type="number"
                         value={releaseYear}
                         onChange={(e) => setReleaseYear(e.target.value)}
                         min={1888}
                         max={2100}
                         placeholder="e.g. 2018"
-                        className={inputCls}
                     />
                 </Field>
 
                 <Field label="Running Time" hint="(minutes)">
-                    <input
+                    <Input
                         type="number"
                         value={runningTime}
                         onChange={(e) => setRunningTime(e.target.value)}
                         min={1}
                         max={600}
                         placeholder="e.g. 127"
-                        className={inputCls}
                     />
                 </Field>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <Field label="Language">
-                    <input
+                    <Input
                         type="text"
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
                         maxLength={100}
                         placeholder="e.g. English"
-                        className={inputCls}
                     />
                 </Field>
 
                 <Field label="Rating">
-                    <select
+                    <Select
                         value={motionPictureRating}
                         onChange={(e) => setMotionPictureRating(e.target.value)}
-                        className={inputCls}
                     >
                         <option value="">Select…</option>
                         {RATINGS.map((r) => (
                             <option key={r} value={r}>{r}</option>
                         ))}
-                    </select>
+                    </Select>
                 </Field>
             </div>
 
             <Field label="Tagline">
-                <input
+                <Input
                     type="text"
                     value={tagline}
                     onChange={(e) => setTagline(e.target.value)}
                     maxLength={500}
                     placeholder="e.g. Every family has its dark secrets."
-                    className={inputCls}
                 />
             </Field>
 
             <Field label="Official Site" hint="(URL)">
-                <input
+                <Input
                     type="url"
                     value={officialSite}
                     onChange={(e) => setOfficialSite(e.target.value)}
                     maxLength={500}
                     placeholder="https://…"
-                    className={inputCls}
                 />
             </Field>
 
             <Field label="Overview">
-                <textarea
+                <Textarea
                     value={overview}
                     onChange={(e) => setOverview(e.target.value)}
                     maxLength={2000}
                     rows={4}
                     placeholder="Brief description of the film…"
-                    className={`${inputCls} resize-none`}
                 />
             </Field>
 
             <Field label="TMDB ID" hint="(optional, helps us match it faster)">
-                <input
+                <Input
                     type="number"
                     value={tmdbId}
                     onChange={(e) => setTmdbId(e.target.value)}
                     placeholder="e.g. 362841"
-                    className={inputCls}
                 />
             </Field>
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <button
-                type="submit"
-                disabled={!title.trim() || status === "submitting"}
-                className="rounded-md bg-lime-400 px-5 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-40"
-            >
+            <Button type="submit" disabled={!title.trim() || status === "submitting"}>
                 {status === "submitting" ? "Submitting…" : "Submit film"}
-            </button>
+            </Button>
         </form>
     );
 }

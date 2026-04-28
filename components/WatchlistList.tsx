@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useWatchlist } from "./WatchlistProvider";
+import { useWatchlist } from "./UserDataProvider";
 
 interface WatchlistItem {
     motionPictureId: number;

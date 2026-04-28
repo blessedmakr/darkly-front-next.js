@@ -2,16 +2,12 @@
 
 import { useState } from "react";
 
-interface InviteTabProps {
-    getToken: () => Promise<string | null>;
-}
-
 interface SentInvite {
     email: string;
     sentAt: string;
 }
 
-export default function InviteTab({ getToken: _ }: InviteTabProps) {
+export default function InviteTab() {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

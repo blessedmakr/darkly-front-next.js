@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import UsersTab from "./admin/UsersTab";
 import SubmissionsTab from "./admin/SubmissionsTab";
 import AnalyticsTab from "./admin/AnalyticsTab";
@@ -17,7 +16,6 @@ interface AdminPanelProps {
 type Tab = "users" | "submissions" | "analytics" | "scores" | "metadata" | "invite";
 
 export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPanelProps) {
-    const { getToken } = useAuth();
     const [tab, setTab] = useState<Tab>("users");
     const [pendingCount, setPendingCount] = useState(
         initialSubmissions.filter((s) => s.status === "pending").length
@@ -46,19 +44,16 @@ export default function AdminPanel({ initialUsers, initialSubmissions }: AdminPa
                 ))}
             </div>
 
-            {tab === "users" && (
-                <UsersTab initialUsers={initialUsers} getToken={getToken} />
-            )}
+            {tab === "users" && <UsersTab initialUsers={initialUsers} />}
             {tab === "submissions" && (
                 <SubmissionsTab
                     initialSubmissions={initialSubmissions}
-                    getToken={getToken}
                     onPendingCountChange={setPendingCount}
                 />
             )}
-            {tab === "analytics" && <AnalyticsTab getToken={getToken} />}
-            {tab === "metadata" && <MetadataTab getToken={getToken} />}
-            {tab === "invite" && <InviteTab getToken={getToken} />}
+            {tab === "analytics" && <AnalyticsTab />}
+            {tab === "metadata" && <MetadataTab />}
+            {tab === "invite" && <InviteTab />}
         </div>
     );
 }

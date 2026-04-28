@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth, SignInButton } from "@clerk/nextjs";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "./UserDataProvider";
 import { useToast } from "./ToastProvider";
 
 interface FavoriteHeartButtonProps {

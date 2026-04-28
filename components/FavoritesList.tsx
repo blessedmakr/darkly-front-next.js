@@ -21,7 +21,7 @@ import {
     useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useFavorites } from "./FavoritesProvider";
+import { useFavorites } from "./UserDataProvider";
 import { useToast } from "./ToastProvider";
 import type { FavoriteItemResponseDto } from "../types/favorites";
 

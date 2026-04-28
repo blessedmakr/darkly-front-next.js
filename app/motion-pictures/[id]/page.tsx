@@ -64,7 +64,9 @@ function buildMovieSchema(film: MotionPicture): Record<string, unknown> {
 }
 
 export const dynamic = "force-static";
-export const revalidate = 3600;
+// 60s ISR window: scores recalculate on every rating. The page-level revalidate
+// overrides per-fetch settings, so this is the actual freshness ceiling.
+export const revalidate = 60;
 
 interface MotionPictureDetailPageProps {
     params: Promise<{

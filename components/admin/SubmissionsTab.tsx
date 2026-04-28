@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { PUBLIC_API_BASE } from "../../lib/config";
+import { useAuthedFetch } from "../../hooks/useAuthedFetch";
 import type { Submission } from "./types";
 
 interface SubmissionsTabProps {
     initialSubmissions: Submission[];
-    getToken: () => Promise<string | null>;
     onPendingCountChange: (count: number) => void;
 }
 
-export default function SubmissionsTab({ initialSubmissions, getToken, onPendingCountChange }: SubmissionsTabProps) {
+export default function SubmissionsTab({ initialSubmissions, onPendingCountChange }: SubmissionsTabProps) {
+    const authedFetch = useAuthedFetch();
     const [submissions, setSubmissions] = useState<Submission[]>(initialSubmissions);
     const [busy, setBusy] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
@@ -19,11 +19,7 @@ export default function SubmissionsTab({ initialSubmissions, getToken, onPending
         setBusy(String(id));
         setActionError(null);
         try {
-            const token = await getToken();
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/submissions/${id}/${action}`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await authedFetch(`/admin/submissions/${id}/${action}`, { method: "POST" });
             if (!res.ok) { setActionError(`Failed to ${action} submission (${res.status})`); return; }
             const updated = submissions.map((s) =>
                 s.id === id ? { ...s, status: action === "approve" ? "approved" : "rejected" } : s

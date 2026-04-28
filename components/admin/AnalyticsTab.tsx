@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PUBLIC_API_BASE } from "../../lib/config";
+import { useAuthedFetch } from "../../hooks/useAuthedFetch";
 
 interface FilmViewStat {
     motionPictureId: number;
@@ -11,26 +11,17 @@ interface FilmViewStat {
     viewsTotal: number;
 }
 
-interface AnalyticsTabProps {
-    getToken: () => Promise<string | null>;
-}
-
-export default function AnalyticsTab({ getToken }: AnalyticsTabProps) {
+export default function AnalyticsTab() {
+    const authedFetch = useAuthedFetch();
     const [topFilms, setTopFilms] = useState<FilmViewStat[] | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function load() {
-            const token = await getToken();
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/analytics/top-films`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) setTopFilms(await res.json());
-            setLoading(false);
-        }
-        load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        authedFetch(`/admin/analytics/top-films`)
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => { if (data) setTopFilms(data); })
+            .finally(() => setLoading(false));
+    }, [authedFetch]);
 
     return (
         <div>

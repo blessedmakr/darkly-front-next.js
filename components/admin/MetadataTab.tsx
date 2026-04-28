@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RemovablePill from "../RemovablePill";
-import { PUBLIC_API_BASE } from "../../lib/config";
+import { useAuthedFetch } from "../../hooks/useAuthedFetch";
 
 interface TagDto {
     id: number;
@@ -40,10 +40,6 @@ interface MetaEdit {
     synopsis: string;
 }
 
-interface MetadataTabProps {
-    getToken: () => Promise<string | null>;
-}
-
 const MPAA_RATINGS = ["", "G", "PG", "PG-13", "R", "NC-17", "NR", "TV-MA", "TV-14", "Unrated"];
 const SAVE_SUCCESS_DURATION_MS = 2000;
 
@@ -61,7 +57,8 @@ function toMetaEdit(f: FilmMeta): MetaEdit {
     };
 }
 
-export default function MetadataTab({ getToken }: MetadataTabProps) {
+export default function MetadataTab() {
+    const authedFetch = useAuthedFetch();
     const [metaFilms, setMetaFilms] = useState<FilmMeta[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [metaEdits, setMetaEdits] = useState<Record<number, MetaEdit>>({});
@@ -77,33 +74,25 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     const [newGenre, setNewGenre] = useState<Record<number, string>>({});
 
     useEffect(() => {
-        async function load() {
-            const token = await getToken();
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/films/metadata`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data: FilmMeta[] = await res.json();
+        authedFetch(`/admin/films/metadata`)
+            .then((res) => res.ok ? res.json() : null)
+            .then((data: FilmMeta[] | null) => {
+                if (!data) return;
                 setMetaFilms(data);
                 const initial: Record<number, MetaEdit> = {};
                 data.forEach((f) => { initial[f.id] = toMetaEdit(f); });
                 setMetaEdits(initial);
-            }
-            setLoading(false);
-        }
-        load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+            })
+            .finally(() => setLoading(false));
+    }, [authedFetch]);
 
     async function saveMetadata(filmId: number) {
         setSavingMetaId(filmId);
         setMetaError(null);
         try {
-            const token = await getToken();
             const edit = metaEdits[filmId];
-            const res = await fetch(`${PUBLIC_API_BASE}/admin/films/${filmId}/metadata`, {
+            const res = await authedFetch(`/admin/films/${filmId}/metadata`, {
                 method: "PATCH",
-                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
                     originalTitle:       edit.originalTitle       || null,
                     alternativeTitle:    edit.alternativeTitle    || null,
@@ -133,10 +122,9 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     async function loadFilmDetails(filmId: number) {
         if (filmDetails[filmId]) return;
         setLoadingDetails((prev) => ({ ...prev, [filmId]: true }));
-        const token = await getToken();
         const [detailsRes, tagsRes] = await Promise.all([
-            fetch(`${PUBLIC_API_BASE}/admin/films/${filmId}/details`, { headers: { Authorization: `Bearer ${token}` } }),
-            allTags === null ? fetch(`${PUBLIC_API_BASE}/tags`) : Promise.resolve(null),
+            authedFetch(`/admin/films/${filmId}/details`),
+            allTags === null ? authedFetch(`/tags`) : Promise.resolve(null),
         ]);
         if (detailsRes.ok) {
             const details: FilmDetails = await detailsRes.json();
@@ -149,11 +137,7 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     async function addTag(filmId: number) {
         const tagId = selectedTagId[filmId];
         if (!tagId) return;
-        const token = await getToken();
-        const res = await fetch(`${PUBLIC_API_BASE}/motion-pictures/${filmId}/tags/${tagId}`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await authedFetch(`/motion-pictures/${filmId}/tags/${tagId}`, { method: "POST" });
         if (res.ok || res.status === 409) {
             const tag = allTags?.find((t) => t.id === Number(tagId));
             if (tag) {
@@ -172,11 +156,7 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     }
 
     async function removeTag(filmId: number, tagId: number) {
-        const token = await getToken();
-        const res = await fetch(`${PUBLIC_API_BASE}/motion-pictures/${filmId}/tags/${tagId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await authedFetch(`/motion-pictures/${filmId}/tags/${tagId}`, { method: "DELETE" });
         if (res.ok || res.status === 404) {
             setFilmDetails((prev) => ({
                 ...prev,
@@ -188,10 +168,8 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     async function addGenre(filmId: number) {
         const genre = newGenre[filmId]?.trim();
         if (!genre) return;
-        const token = await getToken();
-        const res = await fetch(`${PUBLIC_API_BASE}/admin/films/${filmId}/genres`, {
+        const res = await authedFetch(`/admin/films/${filmId}/genres`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
             body: JSON.stringify({ genre }),
         });
         if (res.ok || res.status === 409) {
@@ -209,11 +187,7 @@ export default function MetadataTab({ getToken }: MetadataTabProps) {
     }
 
     async function removeGenre(filmId: number, genre: string) {
-        const token = await getToken();
-        const res = await fetch(`${PUBLIC_API_BASE}/admin/films/${filmId}/genres/${encodeURIComponent(genre)}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await authedFetch(`/admin/films/${filmId}/genres/${encodeURIComponent(genre)}`, { method: "DELETE" });
         if (res.ok || res.status === 404) {
             setFilmDetails((prev) => ({
                 ...prev,

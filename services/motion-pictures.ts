@@ -1,6 +1,7 @@
 // services/motion-picture-service.ts
 
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { apiFetch } from "../lib/api";
 import type { MotionPicture, MotionPicturePreviewDto } from "../types/motion-picture";
 import type { MotionPictureDto } from "../types/motion-picture-dto";
@@ -35,6 +36,21 @@ function mapDtoToMotionPicture(dto: MotionPictureDto): MotionPicture {
     };
 }
 
+// POST requests bypass Next's data cache, so /motionPicture/search would hit
+// the backend on every keystroke during a typing burst. unstable_cache adds an
+// app-level keyed cache so identical filter URLs share a result for 60s.
+const cachedSearch = unstable_cache(
+    async (serializedBody: string): Promise<MotionPictureSearchResponseDto> => {
+        return apiFetch<MotionPictureSearchResponseDto>("/motionPicture/search", {
+            method: "POST",
+            body: serializedBody,
+            headers: { "Content-Type": "application/json" },
+        });
+    },
+    ["motion-picture-search"],
+    { revalidate: 60 }
+);
+
 export async function searchMotionPicturesWithFilters(
     filters: MotionPictureFilterState,
     options?: {
@@ -43,14 +59,7 @@ export async function searchMotionPicturesWithFilters(
     }
 ): Promise<MotionPictureSearchResponse> {
     const requestBody = mapFiltersToMotionPictureSearchRequest(filters, options);
-
-    const response = await apiFetch<MotionPictureSearchResponseDto>("/motionPicture/search", {
-        method: "POST",
-        body: JSON.stringify(requestBody),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    });
+    const response = await cachedSearch(JSON.stringify(requestBody));
 
     return {
         ...response,
@@ -58,29 +67,12 @@ export async function searchMotionPicturesWithFilters(
     };
 }
 
-export async function getMotionPictureByTitleAndDate(
-    title: string,
-    releaseDate: string
-): Promise<MotionPicture> {
-    const params = new URLSearchParams({
-        title,
-        releaseDate,
-    });
-
-    const dto = await apiFetch<MotionPictureDto>(
-        `/motionPicture/getMotionPicture/?${params.toString()}`
-    );
-
-    return mapDtoToMotionPicture(dto);
-}
-
 export const getMotionPictureById = cache(
     async (id: number): Promise<MotionPicture> => {
-        const dto = await apiFetch<MotionPictureDto>(
-            `/motionPicture/getById/${id}`,
-            // revalidate: 0 — scores update on every rating submission, must always be fresh
-            { next: { revalidate: 0 } } as RequestInit,
-        );
+        // The detail page is force-static with a 60s revalidate window, which
+        // overrides any per-fetch setting. Leaving revalidate undefined here
+        // so the page-level directive controls freshness.
+        const dto = await apiFetch<MotionPictureDto>(`/motionPicture/getById/${id}`);
         return mapDtoToMotionPicture(dto);
     }
 );

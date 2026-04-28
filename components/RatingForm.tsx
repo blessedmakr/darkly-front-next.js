@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth, SignInButton, Show } from "@clerk/nextjs";
-import { useRole } from "./RoleProvider";
-import { PUBLIC_API_BASE } from "../lib/config";
+import { SignInButton, Show } from "@clerk/nextjs";
+import { useRole } from "./UserDataProvider";
+import { useAuthedFetch } from "../hooks/useAuthedFetch";
 
 const DIMENSIONS = [
     { key: "overallScore",    label: "Overall"    },
@@ -79,7 +79,7 @@ function formatUnlockDate(iso: string): string {
 
 export default function RatingForm({ motionPictureId, motionPictureTitle }: RatingFormProps) {
     const router = useRouter();
-    const { getToken } = useAuth();
+    const authedFetch = useAuthedFetch();
     const { isAdmin } = useRole();
 
     const [existing, setExisting]     = useState<ExistingRating | null>(null);
@@ -99,30 +99,23 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
 
     // Fetch existing rating on mount
     useEffect(() => {
-        getToken().then((token) => {
-            if (!token) { setLoadingExisting(false); return; }
-            return fetch(
-                `${PUBLIC_API_BASE}/ratings/motion-pictures/${motionPictureId}/mine`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            ).then((res) => {
-                if (!res.ok) return;
-                return res.json();
-            }).then((data) => {
-                if (!data) return;
-                if (data.rated) {
-                    const r: ExistingRating = data;
-                    setExisting(r);
-                    setScores({
-                        overallScore:    r.overallScore,
-                        fearScore:       r.fearScore,
-                        atmosphereScore: r.atmosphereScore,
-                        goreScore:       r.goreScore,
-                    });
-                    setReviewText(r.reviewText ?? "");
-                }
-            });
-        }).catch(() => {}).finally(() => setLoadingExisting(false));
-    }, [motionPictureId, getToken]);
+        authedFetch(`/ratings/motion-pictures/${motionPictureId}/mine`)
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+                if (!data?.rated) return;
+                const r: ExistingRating = data;
+                setExisting(r);
+                setScores({
+                    overallScore:    r.overallScore,
+                    fearScore:       r.fearScore,
+                    atmosphereScore: r.atmosphereScore,
+                    goreScore:       r.goreScore,
+                });
+                setReviewText(r.reviewText ?? "");
+            })
+            .catch(() => {})
+            .finally(() => setLoadingExisting(false));
+    }, [motionPictureId, authedFetch]);
 
     const isUpdate    = existing !== null;
     const scoresLocked = existing?.scoresLocked ?? false;
@@ -134,8 +127,7 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
         setError(null);
 
         try {
-            const token = await getToken();
-            const url = `${PUBLIC_API_BASE}/ratings/motion-pictures/${motionPictureId}`;
+            const path = `/ratings/motion-pictures/${motionPictureId}`;
 
             let res: Response;
             if (isUpdate) {
@@ -146,15 +138,13 @@ export default function RatingForm({ motionPictureId, motionPictureTitle }: Rati
                     body.atmosphereScore = scores.atmosphereScore;
                     body.goreScore       = scores.goreScore;
                 }
-                res = await fetch(url, {
+                res = await authedFetch(path, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                     body: JSON.stringify(body),
                 });
             } else {
-                res = await fetch(url, {
+                res = await authedFetch(path, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                     body: JSON.stringify({ ...scores, reviewText: reviewText.trim() || null }),
                 });
             }
