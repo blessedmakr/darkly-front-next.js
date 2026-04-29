@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
@@ -20,7 +21,7 @@ const securityHeaders = [
             "script-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.accounts.dev https://challenges.cloudflare.com",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob: https://image.tmdb.org https://img.clerk.com",
-            `connect-src 'self' https://*.clerk.accounts.dev https://clerk.dev ${apiBase}`,
+            `connect-src 'self' https://*.clerk.accounts.dev https://clerk.dev https://*.ingest.sentry.io https://*.ingest.us.sentry.io ${apiBase}`,
             "frame-src https://challenges.cloudflare.com https://clerk.accounts.dev https://*.clerk.accounts.dev",
             "frame-ancestors 'none'",
             "form-action 'self'",
@@ -58,4 +59,12 @@ const nextConfig: NextConfig = {
     },
 };
 
-export default nextConfig;
+// Wrap with Sentry. Source map upload only happens when SENTRY_AUTH_TOKEN +
+// SENTRY_ORG + SENTRY_PROJECT are set (Vercel env); otherwise this is a no-op.
+export default withSentryConfig(nextConfig, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    silent: !process.env.CI,
+    widenClientFileUpload: true,
+    disableLogger: true,
+});
