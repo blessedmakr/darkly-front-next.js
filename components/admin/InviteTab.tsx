@@ -1,22 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-interface SentInvite {
-    email: string;
-    sentAt: string;
+type InvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+
+interface Invitation {
+    id: string;
+    emailAddress: string;
+    status: InvitationStatus;
+    createdAt: number;
+    url: string;
+}
+
+const STATUS_STYLES: Record<InvitationStatus, string> = {
+    pending:  "border-amber-400/30 bg-amber-400/10 text-amber-300",
+    accepted: "border-lime-400/30 bg-lime-400/10 text-lime-300",
+    revoked:  "border-zinc-700 bg-zinc-800/60 text-zinc-500",
+    expired:  "border-zinc-700 bg-zinc-800/60 text-zinc-500",
+};
+
+function formatSent(ms: number): string {
+    return new Date(ms).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
 }
 
 export default function InviteTab() {
     const [email, setEmail] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [sent, setSent] = useState<SentInvite[]>([]);
+    const [invitations, setInvitations] = useState<Invitation[] | null>(null);
+    const [loadingList, setLoadingList] = useState(true);
+
+    async function loadInvitations() {
+        try {
+            const res = await fetch("/api/admin/invite", { cache: "no-store" });
+            if (!res.ok) {
+                setInvitations([]);
+                return;
+            }
+            const data: { invitations: Invitation[] } = await res.json();
+            // Newest first
+            setInvitations(
+                [...data.invitations].sort((a, b) => b.createdAt - a.createdAt)
+            );
+        } catch {
+            setInvitations([]);
+        } finally {
+            setLoadingList(false);
+        }
+    }
+
+    useEffect(() => {
+        loadInvitations();
+    }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
-        setLoading(true);
+        setSubmitting(true);
 
         try {
             const res = await fetch("/api/admin/invite", {
@@ -32,12 +76,12 @@ export default function InviteTab() {
                 return;
             }
 
-            setSent((prev) => [{ email, sentAt: new Date().toLocaleTimeString() }, ...prev]);
             setEmail("");
+            await loadInvitations();
         } catch {
             setError("Network error — could not send invitation");
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     }
 
@@ -64,29 +108,45 @@ export default function InviteTab() {
 
                 <button
                     type="submit"
-                    disabled={loading || !email}
+                    disabled={submitting || !email}
                     className="rounded-md border border-lime-400/30 bg-lime-400/10 px-5 py-2 text-sm text-lime-300 transition-colors hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                    {loading ? "Sending…" : "Send invitation"}
+                    {submitting ? "Sending…" : "Send invitation"}
                 </button>
             </form>
 
-            {sent.length > 0 && (
-                <div>
-                    <p className="mb-3 text-xs uppercase tracking-[0.2em] text-zinc-500">Sent this session</p>
+            <div>
+                <p className="mb-3 text-xs uppercase tracking-[0.2em] text-zinc-500">Invitations</p>
+
+                {loadingList && (
+                    <p className="text-sm text-zinc-500">Loading…</p>
+                )}
+
+                {!loadingList && invitations !== null && invitations.length === 0 && (
+                    <p className="text-sm text-zinc-500">No invitations yet.</p>
+                )}
+
+                {!loadingList && invitations !== null && invitations.length > 0 && (
                     <div className="space-y-2">
-                        {sent.map((invite, i) => (
+                        {invitations.map((inv) => (
                             <div
-                                key={i}
-                                className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+                                key={inv.id}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3"
                             >
-                                <span className="text-sm text-zinc-300">{invite.email}</span>
-                                <span className="text-xs text-zinc-600">{invite.sentAt}</span>
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm text-zinc-300">{inv.emailAddress}</p>
+                                    <p className="text-xs text-zinc-600">{formatSent(inv.createdAt)}</p>
+                                </div>
+                                <span
+                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.15em] ${STATUS_STYLES[inv.status] ?? STATUS_STYLES.expired}`}
+                                >
+                                    {inv.status}
+                                </span>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
