@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
 import HeaderSearch from "./HeaderSearch";
 import AdminLink from "./AdminLink";
+import NavLink from "./NavLink";
 
 interface HeaderProps {
     overlay?: boolean;
@@ -41,12 +42,7 @@ export default function Header({ overlay = false }: HeaderProps) {
                             ].join(" ")}
                         >
                             <li>
-                                <Link
-                                    href="/motion-pictures"
-                                    className="transition hover:text-white"
-                                >
-                                    Discover
-                                </Link>
+                                <NavLink href="/motion-pictures">Discover</NavLink>
                             </li>
                         </ul>
                     </nav>
@@ -90,21 +86,11 @@ export default function Header({ overlay = false }: HeaderProps) {
                     {isSignedIn && (
                         <>
                             <nav className="hidden items-center gap-4 text-sm md:flex">
-                                <Link href="/recommendations" className="text-zinc-400 transition hover:text-zinc-100">
-                                    Recommendations
-                                </Link>
-                                <Link href="/watchlist" className="text-zinc-400 transition hover:text-zinc-100">
-                                    Watchlist
-                                </Link>
-                                <Link href="/favorites" className="text-zinc-400 transition hover:text-zinc-100">
-                                    Favorites
-                                </Link>
-                                <Link href="/ratings" className="text-zinc-400 transition hover:text-zinc-100">
-                                    My Ratings
-                                </Link>
-                                <Link href="/submit" className="text-zinc-400 transition hover:text-zinc-100">
-                                    Submit
-                                </Link>
+                                <NavLink href="/recommendations">Recommendations</NavLink>
+                                <NavLink href="/watchlist">Watchlist</NavLink>
+                                <NavLink href="/favorites">Favorites</NavLink>
+                                <NavLink href="/ratings">My Ratings</NavLink>
+                                <NavLink href="/submit">Submit</NavLink>
                                 <AdminLink />
                             </nav>
                             <UserButton />
