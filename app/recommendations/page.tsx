@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getRecommendations, getSimilarFilms } from "../../services/motion-pictures";
 import MotionPicturePreviewCard from "../../components/MotionPicturePreviewCard";
+import UserDataSeeder from "../../components/UserDataSeeder";
 import type { MotionPicturePreviewDto } from "../../types/motion-picture";
 import { SERVER_API_BASE } from "../../lib/config";
 
@@ -35,17 +36,26 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
             ? Number(similarToParam)
             : null;
 
-    const ratingsRes = await fetch(
-        `${SERVER_API_BASE}/ratings/mine`,
-        { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
-    );
+    const authHeaders = { Authorization: `Bearer ${token}` };
+    const [ratingsRes, favoritesRes] = await Promise.all([
+        fetch(`${SERVER_API_BASE}/ratings/mine`, { headers: authHeaders, cache: "no-store" }),
+        fetch(`${SERVER_API_BASE}/favorites/mine`, { headers: authHeaders, cache: "no-store" }),
+    ]);
     const ratings: unknown[] = ratingsRes.ok ? await ratingsRes.json() : [];
+    const favorites: Array<{ motionPictureId: number }> = favoritesRes.ok ? await favoritesRes.json() : [];
     const ratingCount = ratings.length;
+    const favoritesCount = favorites.length;
+    const favoriteIds = favorites.map((f) => f.motionPictureId);
+
+    // Two unlock paths: enough ratings, or any favorite. The backend endpoint
+    // averages the user's top 5 favorite vectors when present, and falls back
+    // to the ratings-derived taste vector otherwise.
+    const hasUnlocked = ratingCount >= RATING_THRESHOLD || favoritesCount >= 1;
 
     let films: MotionPicturePreviewDto[] = [];
     let similarFilms: MotionPicturePreviewDto[] = [];
 
-    if (ratingCount >= RATING_THRESHOLD) {
+    if (hasUnlocked) {
         [films, similarFilms] = await Promise.all([
             getRecommendations(token).catch(() => []),
             similarToId ? getSimilarFilms(similarToId).catch(() => []) : Promise.resolve([]),
@@ -56,16 +66,18 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
 
     return (
         <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
+            <UserDataSeeder favoriteIds={favoriteIds} />
             <div className="mx-auto max-w-6xl">
                 <h1 className="text-3xl font-semibold tracking-tight">Recommended for You</h1>
 
-                {ratingCount >= RATING_THRESHOLD && films.length > 0 && (
+                {hasUnlocked && films.length > 0 && (
                     <p className="mt-2 text-zinc-400">
-                        {films.length} film{films.length === 1 ? "" : "s"} selected based on your ratings
+                        {films.length} film{films.length === 1 ? "" : "s"} selected based on your{" "}
+                        {favoritesCount >= 1 ? "favorites" : "ratings"}
                     </p>
                 )}
 
-                {ratingCount < RATING_THRESHOLD ? (
+                {!hasUnlocked ? (
                     <div className="mt-16 flex flex-col items-center gap-6 text-center">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900">
                             <svg className="h-7 w-7 text-zinc-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -80,8 +92,8 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
                             </p>
                             <p className="mt-2 max-w-sm text-sm text-zinc-500">
                                 {ratingCount === 0
-                                    ? `Rate ${RATING_THRESHOLD} films and watchdarkly will find what to watch next based on your taste.`
-                                    : `Rate ${RATING_THRESHOLD - ratingCount} more film${RATING_THRESHOLD - ratingCount === 1 ? "" : "s"} to unlock your recommendations.`}
+                                    ? `Rate ${RATING_THRESHOLD} films or favorite one, and watchdarkly will find what to watch next based on your taste.`
+                                    : `Rate ${RATING_THRESHOLD - ratingCount} more film${RATING_THRESHOLD - ratingCount === 1 ? "" : "s"} or favorite one to unlock your recommendations.`}
                             </p>
                         </div>
 

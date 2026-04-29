@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import WatchlistList from "../../components/WatchlistList";
+import UserDataSeeder from "../../components/UserDataSeeder";
 import { SERVER_API_BASE } from "../../lib/config";
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default async function MyWatchlistPage() {
 
     return (
         <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100">
+            <UserDataSeeder watchlistIds={items.map((i) => i.motionPictureId)} />
             <div className="mx-auto max-w-3xl">
                 <h1 className="text-3xl font-semibold tracking-tight">My Watchlist</h1>
                 <WatchlistList initialItems={items} initialRatedIds={ratedIds} />

@@ -34,6 +34,11 @@ interface WatchlistContextValue {
     toggle: (id: number) => Promise<"added" | "removed">;
 }
 
+interface SeedContextValue {
+    seedFavorites: (ids: number[]) => void;
+    seedWatchlist: (ids: number[]) => void;
+}
+
 const RoleContext = createContext<RoleContextValue>({
     role: null,
     isAdmin: false,
@@ -53,6 +58,11 @@ const WatchlistContext = createContext<WatchlistContextValue>({
     toggle: async () => "added",
 });
 
+const SeedContext = createContext<SeedContextValue>({
+    seedFavorites: () => {},
+    seedWatchlist: () => {},
+});
+
 export function useRole() {
     return useContext(RoleContext);
 }
@@ -65,6 +75,17 @@ export function useWatchlist() {
     return useContext(WatchlistContext);
 }
 
+/**
+ * Server pages that already fetched the user's favorites or watchlist can
+ * pass that data into the provider via {@link UserDataSeeder}, which uses
+ * this hook. The seed is written to a ref during render — the provider's
+ * mount-effect reads the ref to decide whether to skip the corresponding
+ * client-side fetch.
+ */
+export function useUserDataSeed() {
+    return useContext(SeedContext);
+}
+
 export default function UserDataProvider({ children }: { children: React.ReactNode }) {
     const { getToken, isSignedIn, userId } = useAuth();
 
@@ -74,6 +95,24 @@ export default function UserDataProvider({ children }: { children: React.ReactNo
     const [isLoaded, setIsLoaded] = useState(false);
 
     const fetchedForRef = useRef<string | null>(null);
+    // Seeds written by <UserDataSeeder /> children during render. The mount
+    // effect reads these to skip fetches whose data is already in hand.
+    const seedRef = useRef<{ favoriteIds: number[] | null; watchlistIds: number[] | null }>({
+        favoriteIds: null,
+        watchlistIds: null,
+    });
+
+    const seedValue = useMemo<SeedContextValue>(
+        () => ({
+            seedFavorites: (ids) => {
+                if (seedRef.current.favoriteIds === null) seedRef.current.favoriteIds = ids;
+            },
+            seedWatchlist: (ids) => {
+                if (seedRef.current.watchlistIds === null) seedRef.current.watchlistIds = ids;
+            },
+        }),
+        []
+    );
 
     useEffect(() => {
         if (!isSignedIn || !userId) {
@@ -81,20 +120,37 @@ export default function UserDataProvider({ children }: { children: React.ReactNo
             setWatchlistIds(new Set());
             setIsLoaded(true);
             fetchedForRef.current = null;
+            seedRef.current = { favoriteIds: null, watchlistIds: null };
             return;
         }
 
         if (fetchedForRef.current === userId) return;
+        // Only consume the seed on a truly-first run after a clean state
+        // (sign-in or initial mount). On a userId switch without sign-out
+        // (Clerk multi-session), the seed in ref belongs to the previous
+        // user and must not be applied to the new one.
+        const isFirstRunForThisSession = fetchedForRef.current === null;
         fetchedForRef.current = userId;
         setIsLoaded(false);
+
+        // Apply seeds synchronously so consumers see correct data on first
+        // render after mount, before the network round-trips complete.
+        const seededFavs = isFirstRunForThisSession ? seedRef.current.favoriteIds : null;
+        const seededWl = isFirstRunForThisSession ? seedRef.current.watchlistIds : null;
+        if (seededFavs !== null) setFavoriteIds(new Set(seededFavs));
+        if (seededWl !== null) setWatchlistIds(new Set(seededWl));
 
         (async () => {
             const token = await getToken();
             const headers = { Authorization: `Bearer ${token}` };
             const [roleRes, favRes, wlRes] = await Promise.all([
                 fetch(`${API}/auth/role`, { headers }).catch(() => null),
-                fetch(`${API}/favorites/mine`, { headers }).catch(() => null),
-                fetch(`${API}/watchlist/mine`, { headers }).catch(() => null),
+                seededFavs !== null
+                    ? Promise.resolve(null)
+                    : fetch(`${API}/favorites/mine`, { headers }).catch(() => null),
+                seededWl !== null
+                    ? Promise.resolve(null)
+                    : fetch(`${API}/watchlist/mine`, { headers }).catch(() => null),
             ]);
 
             if (roleRes?.ok) {
@@ -227,12 +283,14 @@ export default function UserDataProvider({ children }: { children: React.ReactNo
     );
 
     return (
-        <RoleContext.Provider value={roleValue}>
-            <FavoritesContext.Provider value={favoritesValue}>
-                <WatchlistContext.Provider value={watchlistValue}>
-                    {children}
-                </WatchlistContext.Provider>
-            </FavoritesContext.Provider>
-        </RoleContext.Provider>
+        <SeedContext.Provider value={seedValue}>
+            <RoleContext.Provider value={roleValue}>
+                <FavoritesContext.Provider value={favoritesValue}>
+                    <WatchlistContext.Provider value={watchlistValue}>
+                        {children}
+                    </WatchlistContext.Provider>
+                </FavoritesContext.Provider>
+            </RoleContext.Provider>
+        </SeedContext.Provider>
     );
 }

@@ -94,8 +94,12 @@ export async function getSimilarFilms(id: number): Promise<MotionPicturePreviewD
     } as RequestInit);
 }
 
+// Hits the favorites-based endpoint, which transparently falls back to the
+// ratings-based query on the backend when the user has no favorites — so one
+// frontend call covers both signal sources. The function is named for what the
+// caller wants ("recommendations"), not the backend implementation path.
 export async function getRecommendations(token: string): Promise<MotionPicturePreviewDto[]> {
-    return apiFetch<MotionPicturePreviewDto[]>("/motionPicture/recommendations", {
+    return apiFetch<MotionPicturePreviewDto[]>("/favorites/mine/recommendations", {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
     });
