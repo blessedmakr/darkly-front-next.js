@@ -61,10 +61,14 @@ const nextConfig: NextConfig = {
 
 // Wrap with Sentry. Source map upload only happens when SENTRY_AUTH_TOKEN +
 // SENTRY_ORG + SENTRY_PROJECT are set (Vercel env); otherwise this is a no-op.
+// tunnelRoute proxies events through our domain so ad-blockers (uBlock,
+// Brave shields) can't drop them. proxy.ts excludes /monitoring from the
+// matcher so middleware doesn't run on every event.
 export default withSentryConfig(nextConfig, {
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_PROJECT,
     silent: !process.env.CI,
     widenClientFileUpload: true,
     disableLogger: true,
+    tunnelRoute: "/monitoring",
 });
