@@ -68,9 +68,27 @@ export default async function OpengraphImage() {
                         lineHeight: 1.3,
                         color: "#a1a1aa",
                         maxWidth: 880,
+                        marginBottom: 40,
                     }}
                 >
                     Rated by fear, gore, and atmosphere — so you always know what you&apos;re in for.
+                </div>
+
+                {/* CTA */}
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        background: "#dc2626",
+                        color: "#ffffff",
+                        padding: "16px 28px",
+                        borderRadius: 8,
+                        fontSize: 26,
+                        fontWeight: 600,
+                        boxShadow: "0 0 32px rgba(220, 38, 38, 0.35)",
+                    }}
+                >
+                    Discover the catalog →
                 </div>
             </div>
         ),

@@ -6,18 +6,20 @@ import { getFeaturedMotionPicture } from "@/services/motion-pictures";
 import { SITE_URL } from "../lib/config";
 
 const DESCRIPTION =
-    "watchdarkly rates horror films by fear, gore, and atmosphere so you always know what you're in for. Discover slasher classics, psychological horror, supernatural dread, and cult favorites.";
+    "Horror films rated by fear, gore, and atmosphere — so you always know what you're in for. Slashers, supernatural, cult favorites.";
+
+const SOCIAL_TITLE = "watchdarkly — Horror Films Rated by Fear, Gore & Atmosphere";
 
 export const metadata: Metadata = {
     title: "Horror Film Ratings — Discover What Terrifies",
     description: DESCRIPTION,
     openGraph: {
-        title: "watchdarkly — Horror Film Ratings",
+        title: SOCIAL_TITLE,
         description: DESCRIPTION,
     },
     twitter: {
         card: "summary_large_image",
-        title: "watchdarkly — Horror Film Ratings",
+        title: SOCIAL_TITLE,
         description: DESCRIPTION,
     },
 };
