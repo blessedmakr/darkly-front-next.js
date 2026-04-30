@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getRecommendations, getSimilarFilms } from "../../services/motion-pictures";
+import { getRecommendations, getSimilarFilms, getDiscovery } from "../../services/motion-pictures";
 import MotionPicturePreviewCard from "../../components/MotionPicturePreviewCard";
 import UserDataSeeder from "../../components/UserDataSeeder";
 import type { MotionPicturePreviewDto } from "../../types/motion-picture";
@@ -54,12 +54,23 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
 
     let films: MotionPicturePreviewDto[] = [];
     let similarFilms: MotionPicturePreviewDto[] = [];
+    // Cold-start grid: shown only when the user hasn't unlocked yet, so they
+    // have something concrete to rate or favorite without bouncing to /browse.
+    // Reuses today's curated Discovery set — already cached for 1h server-side.
+    let coldStartFilms: MotionPicturePreviewDto[] = [];
+    let coldStartTags: string[] = [];
 
     if (hasUnlocked) {
         [films, similarFilms] = await Promise.all([
             getRecommendations(token).catch(() => []),
             similarToId ? getSimilarFilms(similarToId).catch(() => []) : Promise.resolve([]),
         ]);
+    } else {
+        const discovery = await getDiscovery().catch(() => null);
+        if (discovery) {
+            coldStartFilms = discovery.films;
+            coldStartTags = discovery.tags;
+        }
     }
 
     const seedFilm = similarToId ? films.find((f) => f.id === similarToId) ?? null : null;
@@ -114,6 +125,26 @@ export default async function RecommendationsPage({ searchParams }: Recommendati
                         >
                             Browse films
                         </Link>
+
+                        {coldStartFilms.length > 0 && (
+                            <section className="mt-12 w-full text-left">
+                                <div className="mb-6 flex items-center gap-4">
+                                    <div className="h-px flex-1 bg-zinc-800" />
+                                    <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">
+                                        Try one of these — {coldStartTags.length > 0 ? coldStartTags.join(" · ") : "today's picks"}
+                                    </p>
+                                    <div className="h-px flex-1 bg-zinc-800" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                                    {coldStartFilms.slice(0, 10).map((film) => (
+                                        <MotionPicturePreviewCard key={film.id} film={film} />
+                                    ))}
+                                </div>
+                                <p className="mt-6 text-center text-xs text-zinc-600">
+                                    Rate or favorite any film to unlock personalized recommendations.
+                                </p>
+                            </section>
+                        )}
                     </div>
                 ) : (
                     <>
